@@ -1,43 +1,51 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap');
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
   /* verzuimdynamiek.nl aligned colors */
-  --background: #F7F8FA;
+  --background: #F4F5F0;
   --foreground: #1F2937;
   --card: #FFFFFF;
   --card-foreground: #1F2937;
   --popover: #FFFFFF;
   --popover-foreground: #1F2937;
-  --primary: #003B5C;
+  --primary: #2D3182;
   --primary-foreground: #FFFFFF;
   --secondary: #F1F5F9;
   --secondary-foreground: #1F2937;
   --muted: #F1F5F9;
   --muted-foreground: #64748B;
-  --accent: #F58025;
+  --accent: #F7A521;
   --accent-foreground: #FFFFFF;
   --destructive: #DC2626;
   --destructive-foreground: #FFFFFF;
   --border: #E5E7EB;
   --input: #E5E7EB;
-  --ring: #003B5C;
-  --chart-1: #003B5C;
-  --chart-2: #F58025;
+  --ring: #2D3182;
+  --chart-1: #2D3182;
+  --chart-2: #F7A521;
   --chart-3: #64748B;
   --chart-4: #10B981;
   --chart-5: #8B5CF6;
   --radius: 1rem;
   --sidebar: #FFFFFF;
   --sidebar-foreground: #1F2937;
-  --sidebar-primary: #003B5C;
+  --sidebar-primary: #2D3182;
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: #F1F5F9;
   --sidebar-accent-foreground: #1F2937;
   --sidebar-border: #E5E7EB;
-  --sidebar-ring: #003B5C;
+  --sidebar-ring: #2D3182;
+  
+  /* Vitalr additional colors */
+  --primary-dark: #222870;
+  --accent-dark: #E09518;
+  --heading: #2D3182;
+  --body: #555555;
+  --subtle: #888888;
 }
 
 .dark {
@@ -76,8 +84,11 @@
 }
 
 @theme inline {
-  --font-sans: 'Inter', 'Inter Fallback', system-ui, sans-serif;
+  /* Fonts */
+  --font-sans: 'Nunito Sans', sans-serif;
   --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  
+  /* Existing colors */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -102,10 +113,6 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -114,6 +121,24 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  
+  /* Vitalr colors - available as Tailwind classes */
+  --color-primary-dark: var(--primary-dark);
+  --color-accent-dark: var(--accent-dark);
+  --color-heading: var(--heading);
+  --color-body: var(--body);
+  --color-subtle: var(--subtle);
+  
+  /* Border radius */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-pill: 50px;
+  
+  /* Box shadows - use with shadow-card, shadow-nav */
+  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.07);
+  --shadow-nav: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 @layer base {
