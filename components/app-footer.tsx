@@ -13,7 +13,7 @@ export function AppFooter() {
           <span>Powered by</span>
           <svg 
             viewBox="0 0 1080 1080" 
-            className="w-12 h-12"
+            className="w-24 h-24"
             aria-label="Salgai"
           >
             <defs>

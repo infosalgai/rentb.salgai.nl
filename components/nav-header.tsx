@@ -15,9 +15,9 @@ export function NavHeader({ showBack = true, backHref = "/" }: NavHeaderProps) {
       <div className="mx-auto flex h-14 max-w-[900px] items-center justify-between px-4">
         <Link href="/demo" className="flex items-center">
           <Image
-            src="/images/verzuimdynamiek-logo.png"
-            alt="Verzuimdynamiek"
-            width={160}
+            src="/images/vitalr-logo.png"
+            alt="Vitalr"
+            width={167}
             height={40}
             className="h-8 w-auto"
             priority

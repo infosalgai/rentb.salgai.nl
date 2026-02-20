@@ -29,9 +29,9 @@ export function DashboardHeader({ role, route, showBack = false, backHref = "/" 
         {/* Left: Logo */}
         <Link href="/demo" className="flex items-center">
           <Image
-            src="/images/verzuimdynamiek-logo.png"
-            alt="Verzuimdynamiek"
-            width={160}
+            src="/images/vitalr-logo.png"
+            alt="Vitalr"
+            width={167}
             height={40}
             className="h-8 w-auto"
             priority

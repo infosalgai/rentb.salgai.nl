@@ -1,10 +1,14 @@
 import React from "react"
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Nunito_Sans } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
-const inter = Inter({ subsets: ["latin"] });
+const nunitoSans = Nunito_Sans({ 
+  subsets: ["latin"],
+  weight: ["400", "600", "700", "800"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: 'Navigatiegesprek',
@@ -44,8 +48,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="nl">
-      <body className={`font-sans antialiased`}>
+    <html lang="nl" className={nunitoSans.className}>
+      <body className="antialiased">
         {children}
         <Analytics />
       </body>
