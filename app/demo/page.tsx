@@ -66,6 +66,9 @@ export default function DemoRoleSelectionPage() {
               <h1 className="mb-2 text-xl font-semibold text-foreground">
               Als wie wil je de demo bekijken?
             </h1>
+            <p className="mb-2 text-sm font-medium text-foreground">
+              Onderdeel van de Mensgericht Casemanagement Toolkit van Verzuimdynamiek & Salgai
+            </p>
             <p className="text-sm text-muted-foreground">
               Kies een rol om de bijbehorende weergave te zien.
             </p>
