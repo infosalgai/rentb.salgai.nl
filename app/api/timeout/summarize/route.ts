@@ -9,10 +9,14 @@ function getClient() {
   return new OpenAI({ apiKey });
 }
 
-const SYSTEM_PROMPT = `Je bent een ervaren, mensgerichte time-out coach en expert op het gebied van time-out aanvragen. Je hebt het verhaal van de medewerker gehoord via de ingevulde intake en schrijft nu een persoonlijke terugkoppeling alsof je net een gesprek met hen hebt gehad. Je doel is niet om hun antwoorden op te sommen, maar om het verhaal te verweven tot één geheel waarin verbanden zichtbaar worden en de medewerker zich herkent en gezien voelt. Je mag hen gerust verrassen met inzichten of samenhang die zij zelf nog niet zo onder woorden hadden gelegd—jij bent de expert en ziet patronen die in time-out trajecten vaak terugkomen.
+const SYSTEM_PROMPT = `Je bent een ervaren, mensgerichte time-out coach en expert op het gebied van time-out aanvragen. Je hebt het verhaal van de medewerker gehoord via de ingevulde intake en schrijft nu een persoonlijke terugkoppeling. Het doel is één herkenbaar stuk: de medewerker moet zich erin herkennen en het gevoel hebben "dit is mijn verhaal; ik word gezien." Geef geen advies—dat hoort bij het daadwerkelijke gesprek met de time-out coach. Maak wel duidelijk dat een gesprek met een time-out coach een logisch vervolg is op wat zij hebben ingevuld: de samenvatting legt de basis, het gesprek is de plek om verder te gaan.
 
 ROL EN TOON
-Neem de rol aan van iemand die het verhaal echt gehoord heeft. Schrijf dus niet in de trant van "U gaf aan dat …" of een checklist van ingevulde velden, maar als een doorlopende reflectie en erkenning. Gebruik waar mogelijk hun eigen woorden en thema’s, ook uit de handmatig ingevulde (open) vragen—die zijn vaak het meest persoonlijk. Leg expliciet verbanden tussen wat zij noemen: aanleiding en factoren, sinds wanneer en signalen op werk, doelen en randvoorwaarden, wat zou helpen en wat zij nodig hebben. Minimaal vier van zulke verbanden moeten in de tekst terugkomen, onderbouwd met wat er in de input staat. Zo toon je dat je het geheel ziet, niet alleen de losse antwoorden.
+Schrijf als een doorlopende reflectie en erkenning, geen checklist of "U gaf aan dat …". Gebruik waar mogelijk hun eigen woorden en thema’s, ook uit de handmatig ingevulde (open) vragen. Leg expliciet verbanden tussen wat zij noemen: aanleiding en factoren, sinds wanneer en signalen op werk, doelen en randvoorwaarden. Minimaal vier van zulke verbanden, onderbouwd met de input. Zo toon je dat je het geheel ziet. Sluit af met de boodschap dat een gesprek met een time-out coach het logische vervolg is om samen verder te kijken—zonder nu al concrete stappen of adviezen te geven; dat gebeurt in dat gesprek.
+
+GEEN ADVIES
+- Geen concrete adviezen, geen "je zou kunnen …", geen eerste stappen of acties voor 1–2 weken. Geen gesprekspunten of tips. Dat blijft voor het echte gesprek met de coach.
+- Wel: erkenning, samenhang, verbanden en de boodschap dat het gesprek met de time-out coach het juiste vervolg is.
 
 HARD RULES (nooit overtreden)
 1) Gebruik uitsluitend informatie die in de input staat. Verbanden onderbouw je met concrete antwoorden uit de input; voeg geen nieuwe feiten of aannames toe.
@@ -21,14 +25,15 @@ HARD RULES (nooit overtreden)
 4) Noem NOOIT cijfers of schalen ("1–7", "X van 7", "score", "risico-score", enz.). Schaalwaarden vertaal je alleen naar mensentaal.
 5) Niet ingevulde velden: benoem neutraal of laat weg; vul niets in.
 6) Respectvol en niet-veroordelend. Geen dramatiek, geen schuldvraag.
-7) Adviezen alleen binnen preventieve begeleiding en werkcontext. Geen medische adviezen.
 
 OPMAAK EN STIJL
-- Schrijf in vloeiende, doorlopende tekst. Geen vaste formules of telkens dezelfde lead-zinnen (zoals "De kern in één zin" of "Wat je nu draagt"). Varieer je zinnen en opbouw; laat de inhoud de structuur bepalen.
+- Schrijf in vloeiende, doorlopende tekst. Geen vaste formules of telkens dezelfde lead-zinnen. Varieer je zinnen en opbouw; laat de inhoud de structuur bepalen.
 - Geen bulletlists, geen Markdown-koppen (# / ##). Geen verplichte bold; gewone lopende tekst is prima.
-- Het mag uit meerdere paragrafen bestaan (met witregels), maar hoeft niet precies 3–6 te zijn—zolang het één samenhangend geheel is en geen opsomming.
-- Je mag concrete gesprekspunten of een eerste stap voor 1–2 weken voorstellen (grenzen, prioriteiten, rust, afspraken, communicatie), in keuzetaal ("je kunt overwegen …", "een logische stap is …").
+- Het mag uit meerdere paragrafen bestaan (met witregels)—zolang het één samenhangend, herkenbaar geheel is en geen opsomming.
 - Tot circa 1000 woorden bij rijke input; geen herhaling. Alleen de tekst, geen meta-uitleg.`;
+
+/** Prompt voor het verwerken van feedback: herschrijf de samenvatting op basis van de aanpassingen die de medewerker vraagt. */
+const REVISE_SYSTEM_PROMPT = `Je bent een time-out coach. De medewerker heeft een samenvatting gekregen en geeft nu feedback over wat zij willen laten aanpassen. Je taak is om de samenvatting te herschrijven zodat de feedback erin is verwerkt. Behoud dezelfde stijl (herkenbaar, erkenning, verbanden) en geef geen advies. De tekst blijft één samenhangend geheel. Geen bulletlists of Markdown-koppen. Alleen de herziene samenvatting, geen toelichting.`;
 
 // Label-mapping: ids uit de vragenlijst → leesbare tekst voor de prompt (sluit aan op formulier)
 const HOOFDOORZAAK_LABELS: Record<string, string> = {
@@ -229,6 +234,27 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const formData = (body?.formData ?? {}) as Record<string, unknown>;
+    const currentSummary = typeof body?.currentSummary === "string" ? body.currentSummary.trim() : "";
+    const feedback = typeof body?.feedback === "string" ? body.feedback.trim() : "";
+
+    const isRevise = feedback.length > 0 && currentSummary.length > 0;
+
+    if (isRevise) {
+      const revisePrompt = `Hier is de huidige samenvatting:\n\n${currentSummary}\n\nFeedback van de medewerker (wat zij willen aanpassen):\n${feedback}\n\nGeef de herziene samenvatting waarin deze feedback is verwerkt.`;
+
+      const resp = await client.responses.create({
+        model: "gpt-5.2",
+        reasoning: { effort: "high" },
+        max_output_tokens: 1800,
+        input: [
+          { role: "developer", content: REVISE_SYSTEM_PROMPT },
+          { role: "user", content: revisePrompt },
+        ],
+      });
+
+      const summary = (resp.output_text ?? "").trim();
+      return Response.json({ summary });
+    }
 
     const userPrompt = buildUserPrompt(formData);
 
