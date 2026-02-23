@@ -433,20 +433,17 @@ function CheckboxList({
   return (
     <div className="space-y-2">
       {options.map((opt) => (
-        <label
-          key={opt}
-          className="flex cursor-pointer items-center gap-3 rounded-lg border border-border p-3 transition-all hover:border-primary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5"
-        >
+        <label key={opt} className={OPTION_ROW_CLASS}>
           <Checkbox
             checked={selected.includes(opt)}
             onCheckedChange={() => onToggle(opt)}
             disabled={hasNotRelevant && opt !== CHECKBOX_NOT_RELEVANT.value}
           />
-          <span className="text-sm text-muted-foreground">{opt}</span>
+          <span className={OPTION_LABEL_CLASS}>{opt}</span>
         </label>
       ))}
       {showNotRelevant && (
-        <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-border p-3 transition-all hover:border-primary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+        <label className={OPTION_ROW_NEUTRAL_CLASS}>
           <Checkbox
             checked={hasNotRelevant}
             onCheckedChange={() => onToggle(CHECKBOX_NOT_RELEVANT.value)}
@@ -517,7 +514,7 @@ function ScaleSlider({ value, onChange, labelLeft, labelMid, labelRight }: { val
   return (
     <div>
       <Slider value={[value]} onValueChange={([v]) => onChange(v)} min={1} max={7} step={1} className="w-full" />
-      <div className="mt-2 flex justify-between text-xs text-muted-foreground">
+      <div className={"mt-2 flex justify-between " + HELPER_TEXT_CLASS}>
         <span>1 = {labelLeft}</span>
         <span>4 = {labelMid}</span>
         <span>7 = {labelRight}</span>
@@ -531,6 +528,16 @@ function ScaleSlider({ value, onChange, labelLeft, labelMid, labelRight }: { val
 
 /** Eenduidige styling voor sub-vraag labels op een pagina (zelfde lettergrootte/gewicht). */
 const QUESTION_LABEL_CLASS = "mb-2 block text-base font-semibold text-foreground"
+/** Styling voor één keuze-optie (radio/select rij). */
+const OPTION_ROW_CLASS =
+  "flex items-center space-x-3 rounded-lg border border-border p-3 transition-all hover:border-primary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5"
+/** Zelfde als OPTION_ROW_CLASS maar voor neutrale opties (Weet ik niet / n.v.t.). */
+const OPTION_ROW_NEUTRAL_CLASS =
+  "flex items-center space-x-3 rounded-lg border border-dashed border-border p-3 transition-all hover:border-primary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5"
+/** Label binnen een keuze-rij:zelfde lettergrootte en gewicht in hele vragenlijst. */
+const OPTION_LABEL_CLASS = "flex-1 cursor-pointer text-sm font-medium text-foreground"
+/** Korte hulptekst onder een vraag. */
+const HELPER_TEXT_CLASS = "text-xs text-muted-foreground"
 /** Subtiele scheidingslijn tussen twee vraagblokken op dezelfde pagina. */
 const QUESTION_DIVIDER = <hr className="my-6 border-0 border-t border-border/50" />
 
@@ -612,37 +619,49 @@ function buildScreens(): Screen[] {
       tooltip: "Hier gaat het om wat jou vooral richting een time-out brengt, zonder in medische details te gaan.",
       choiceField: "hoofdoorzaak",
       optionalNoteField: "hoofdoorzaakToelichting",
-      render: (fd, update) => (
-        <>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {HOOFDOORZAAK_OPTIONS.map((opt) => (
-              <SelectCardWithTooltip
-                key={opt.id}
-                selected={fd.hoofdoorzaak === opt.id}
-                onClick={() => update({ hoofdoorzaak: opt.id })}
-                label={opt.label}
-                meta={HOOFDOORZAAK_OPTION_META[opt.id] ?? HOOFDOORZAAK_OPTION_META.anders}
-              />
-            ))}
-            {NEUTRAL_OPTIONS_RADIO.map((opt) => (
-              <SelectCard
-                key={opt.id}
-                selected={fd.hoofdoorzaak === opt.id}
-                onClick={() => update({ hoofdoorzaak: opt.id })}
-                label={opt.label}
-              />
-            ))}
-          </div>
-          {fd.hoofdoorzaak === "anders" && (
-            <div className="mt-4 space-y-3">
-              <Input
-                value={fd.andersText}
-                onChange={(e) => update({ andersText: e.target.value })}
-                placeholder="Kort omschrijven..."
-                maxLength={100}
-              />
+      render: (fd, update) => {
+        const andersOption = HOOFDOORZAAK_OPTIONS.find((o) => o.id === "anders")
+        const andereOpties = HOOFDOORZAAK_OPTIONS.filter((o) => o.id !== "anders")
+        return (
+          <>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {andereOpties.map((opt) => (
+                <SelectCardWithTooltip
+                  key={opt.id}
+                  selected={fd.hoofdoorzaak === opt.id}
+                  onClick={() => update({ hoofdoorzaak: opt.id })}
+                  label={opt.label}
+                  meta={HOOFDOORZAAK_OPTION_META[opt.id] ?? HOOFDOORZAAK_OPTION_META.anders}
+                />
+              ))}
+              {NEUTRAL_OPTIONS_RADIO.map((opt) => (
+                <SelectCard
+                  key={opt.id}
+                  selected={fd.hoofdoorzaak === opt.id}
+                  onClick={() => update({ hoofdoorzaak: opt.id })}
+                  label={opt.label}
+                />
+              ))}
+              {andersOption && (
+                <SelectCardWithTooltip
+                  key={andersOption.id}
+                  selected={fd.hoofdoorzaak === andersOption.id}
+                  onClick={() => update({ hoofdoorzaak: andersOption.id })}
+                  label={andersOption.label}
+                  meta={HOOFDOORZAAK_OPTION_META.anders}
+                />
+              )}
             </div>
-          )}
+            {fd.hoofdoorzaak === "anders" && (
+              <div className="mt-4">
+                <Input
+                  value={fd.andersText}
+                  onChange={(e) => update({ andersText: e.target.value })}
+                  placeholder="Omschrijf hoe dit voor jou voelt"
+                  maxLength={100}
+                />
+              </div>
+            )}
           {QUESTION_DIVIDER}
           <div className="space-y-4">
             <div>
@@ -657,7 +676,8 @@ function buildScreens(): Screen[] {
             </div>
           </div>
         </>
-      ),
+        );
+      },
     },
     {
       id: "factoren",
@@ -697,15 +717,15 @@ function buildScreens(): Screen[] {
       render: (fd, update) => (
         <RadioGroup value={fd.sinds} onValueChange={(v) => update({ sinds: v })} className="space-y-2">
           {SINDS_OPTIONS.map((opt) => (
-            <div key={opt.id} className="flex items-center space-x-3 rounded-lg border border-border p-3 transition-all hover:border-primary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+            <div key={opt.id} className={OPTION_ROW_CLASS}>
               <RadioGroupItem value={opt.id} id={`sinds-${opt.id}`} />
-              <Label htmlFor={`sinds-${opt.id}`} className="flex-1 cursor-pointer text-sm">{opt.label}</Label>
+              <Label htmlFor={`sinds-${opt.id}`} className={OPTION_LABEL_CLASS}>{opt.label}</Label>
             </div>
           ))}
           {NEUTRAL_OPTIONS_RADIO.map((opt) => (
-            <div key={opt.id} className="flex items-center space-x-3 rounded-lg border border-border border-dashed p-3 transition-all hover:border-primary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+            <div key={opt.id} className={OPTION_ROW_NEUTRAL_CLASS}>
               <RadioGroupItem value={opt.id} id={`sinds-${opt.id}`} />
-              <Label htmlFor={`sinds-${opt.id}`} className="flex-1 cursor-pointer text-sm">{opt.label}</Label>
+              <Label htmlFor={`sinds-${opt.id}`} className={OPTION_LABEL_CLASS}>{opt.label}</Label>
             </div>
           ))}
         </RadioGroup>
@@ -717,50 +737,46 @@ function buildScreens(): Screen[] {
       title: "Hoe groot is de kans dat dit zonder verandering richting verzuim gaat?",
       topic: "Medische gezondheid",
       tooltip: "Dit gaat over jouw gevoel van risico op uitval, niet om een medische inschatting.",
+      required: false,
+      render: (fd, update) => (
+        <ScaleSlider
+          value={fd.risico}
+          onChange={(v) => update({ risico: v })}
+          labelLeft="Nauwelijks"
+          labelMid="Twijfel"
+          labelRight="Zeer groot"
+        />
+      ),
+    },
+    {
+      id: "signalen",
+      group: "Situatie",
+      title: "Welke signalen herken je bij jezelf op het werk?",
+      subtitle: "Meerdere antwoorden mogelijk. Kies wat nu het beste past.",
+      topic: "Medische gezondheid",
+      tooltip: "Dit gaat om wat je zelf merkt in je gedrag of lichaam op het werk, zonder medische conclusies.",
       multiChoiceField: "signalen",
       render: (fd, update, toggleMulti, getMulti) => {
         const onToggle = getMulti ? (v: string) => getMulti("signalen")(v) : (v: string) => toggleMulti("signalen", v)
         return (
-          <div className="space-y-6">
+          <div className="space-y-4">
+            <CheckboxList options={SIGNALEN_OPTIONS} selected={fd.signalen} onToggle={onToggle} showNotRelevant />
             <div>
-              <ScaleSlider
-                value={fd.risico}
-                onChange={(v) => update({ risico: v })}
-                labelLeft="Nauwelijks"
-                labelMid="Twijfel"
-                labelRight="Zeer groot"
+              <Label className={QUESTION_LABEL_CLASS + " mb-1"}>
+                Wil je de signalen kort toelichten? (optioneel)
+              </Label>
+              <Textarea
+                value={fd.signalenToelichting}
+                onChange={(e) => update({ signalenToelichting: e.target.value })}
+                placeholder="Bijvoorbeeld: ik merk het vooral aan mijn concentratie of hoe ik thuis binnenkom..."
+                maxLength={300}
+                rows={3}
+                className="mt-1"
               />
-            </div>
-            {QUESTION_DIVIDER}
-            <div>
-              <Label className={QUESTION_LABEL_CLASS}>Welke signalen herken je bij jezelf op het werk?</Label>
-              <p className="mb-3 text-xs text-muted-foreground">
-                Meerdere antwoorden zijn mogelijk. Kies wat nu het beste past.
-              </p>
-              <CheckboxList options={SIGNALEN_OPTIONS} selected={fd.signalen} onToggle={onToggle} showNotRelevant />
             </div>
           </div>
         )
       },
-    },
-    {
-      id: "signalen-toelichting",
-      group: "Situatie",
-      title: "Wil je de signalen kort toelichten? (optioneel)",
-      subtitle: "Alleen invullen als je dat prettig vindt.",
-      topic: "Psychische gezondheid",
-      tooltip: "Gebruik dit veld als je in je eigen woorden iets wilt toevoegen over wat je merkt.",
-      required: false,
-      optionalNoteField: "signalenToelichting",
-      render: (fd, update) => (
-        <Textarea
-          value={fd.signalenToelichting}
-          onChange={(e) => update({ signalenToelichting: e.target.value })}
-          placeholder="Bijvoorbeeld: ik merk het vooral aan mijn concentratie of hoe ik thuis binnenkom..."
-          maxLength={300}
-          rows={3}
-        />
-      ),
     },
     {
       id: "doelen",
@@ -777,7 +793,7 @@ function buildScreens(): Screen[] {
           <>
             <ChipSelect options={DOEL_OPTIONS} selected={fd.doelen} onToggle={onToggle} max={2} showNotRelevant />
             {fd.doelen.length >= 2 && !fd.doelen.includes(CHECKBOX_NOT_RELEVANT.value) && (
-              <p className="mt-2 text-xs text-muted-foreground">Maximum bereikt. Deselecteer er een om te wisselen.</p>
+              <p className={"mt-2 " + HELPER_TEXT_CLASS}>Maximum bereikt. Deselecteer er een om te wisselen.</p>
             )}
           </>
         )
@@ -822,15 +838,15 @@ function buildScreens(): Screen[] {
       render: (fd, update) => (
         <RadioGroup value={fd.werkdrukDuur} onValueChange={(v) => update({ werkdrukDuur: v })} className="space-y-2">
           {WERKDRUK_DUUR.map((opt) => (
-            <div key={opt.id} className="flex items-center space-x-3 rounded-lg border border-border p-3 transition-all hover:border-primary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+            <div key={opt.id} className={OPTION_ROW_CLASS}>
               <RadioGroupItem value={opt.id} id={`wd-${opt.id}`} />
-              <Label htmlFor={`wd-${opt.id}`} className="flex-1 cursor-pointer text-sm">{opt.label}</Label>
+              <Label htmlFor={`wd-${opt.id}`} className={OPTION_LABEL_CLASS}>{opt.label}</Label>
             </div>
           ))}
           {NEUTRAL_OPTIONS_RADIO.map((opt) => (
-            <div key={opt.id} className="flex items-center space-x-3 rounded-lg border border-dashed border-border p-3 transition-all hover:border-primary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+            <div key={opt.id} className={OPTION_ROW_NEUTRAL_CLASS}>
               <RadioGroupItem value={opt.id} id={`wd-${opt.id}`} />
-              <Label htmlFor={`wd-${opt.id}`} className="flex-1 cursor-pointer text-sm">{opt.label}</Label>
+              <Label htmlFor={`wd-${opt.id}`} className={OPTION_LABEL_CLASS}>{opt.label}</Label>
             </div>
           ))}
         </RadioGroup>
@@ -858,27 +874,37 @@ function buildScreens(): Screen[] {
       topic: "Sociale gezondheid",
       tooltip: "Dit helpt om samen te kijken welke praktische steun of ruimte je nu nodig hebt.",
       choiceField: "werkdrukHelpt",
-      render: (fd, update) => (
-        <>
-          <RadioGroup value={fd.werkdrukHelpt} onValueChange={(v) => update({ werkdrukHelpt: v })} className="space-y-2">
-            {WERKDRUK_HELPT.map((opt) => (
-              <div key={opt.id} className="flex items-center space-x-3 rounded-lg border border-border p-3 transition-all hover:border-primary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
-                <RadioGroupItem value={opt.id} id={`wh-${opt.id}`} />
-                <Label htmlFor={`wh-${opt.id}`} className="flex-1 cursor-pointer text-sm">{opt.label}</Label>
-              </div>
-            ))}
-            {NEUTRAL_OPTIONS_RADIO.map((opt) => (
-              <div key={opt.id} className="flex items-center space-x-3 rounded-lg border border-dashed border-border p-3 transition-all hover:border-primary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
-                <RadioGroupItem value={opt.id} id={`wh-${opt.id}`} />
-                <Label htmlFor={`wh-${opt.id}`} className="flex-1 cursor-pointer text-sm">{opt.label}</Label>
-              </div>
-            ))}
-          </RadioGroup>
-          {fd.werkdrukHelpt === "anders" && (
-            <Input className="mt-3" value={fd.werkdrukHelptAnders} onChange={(e) => update({ werkdrukHelptAnders: e.target.value })} placeholder="Wat zou helpen?" maxLength={200} />
-          )}
-        </>
-      ),
+      render: (fd, update) => {
+        const andersOpt = WERKDRUK_HELPT.find((o) => o.id === "anders")
+        const andereHelpt = WERKDRUK_HELPT.filter((o) => o.id !== "anders")
+        return (
+          <>
+            <RadioGroup value={fd.werkdrukHelpt} onValueChange={(v) => update({ werkdrukHelpt: v })} className="space-y-2">
+              {andereHelpt.map((opt) => (
+                <div key={opt.id} className={OPTION_ROW_CLASS}>
+                  <RadioGroupItem value={opt.id} id={`wh-${opt.id}`} />
+                  <Label htmlFor={`wh-${opt.id}`} className={OPTION_LABEL_CLASS}>{opt.label}</Label>
+                </div>
+              ))}
+              {NEUTRAL_OPTIONS_RADIO.map((opt) => (
+                <div key={opt.id} className={OPTION_ROW_NEUTRAL_CLASS}>
+                  <RadioGroupItem value={opt.id} id={`wh-${opt.id}`} />
+                  <Label htmlFor={`wh-${opt.id}`} className={OPTION_LABEL_CLASS}>{opt.label}</Label>
+                </div>
+              ))}
+              {andersOpt && (
+                <div key={andersOpt.id} className={OPTION_ROW_CLASS}>
+                  <RadioGroupItem value={andersOpt.id} id={`wh-${andersOpt.id}`} />
+                  <Label htmlFor={`wh-${andersOpt.id}`} className={OPTION_LABEL_CLASS}>{andersOpt.label}</Label>
+                </div>
+              )}
+            </RadioGroup>
+            {fd.werkdrukHelpt === "anders" && (
+              <Input className="mt-3" value={fd.werkdrukHelptAnders} onChange={(e) => update({ werkdrukHelptAnders: e.target.value })} placeholder="Omschrijf hoe dit voor jou voelt" maxLength={200} />
+            )}
+          </>
+        )
+      },
     },
 
     // Route B: Samenwerking
@@ -893,15 +919,15 @@ function buildScreens(): Screen[] {
       render: (fd, update) => (
         <RadioGroup value={fd.conflictMet} onValueChange={(v) => update({ conflictMet: v })} className="space-y-2">
           {CONFLICT_MET.map((opt) => (
-            <div key={opt.id} className="flex items-center space-x-3 rounded-lg border border-border p-3 transition-all hover:border-primary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+            <div key={opt.id} className={OPTION_ROW_CLASS}>
               <RadioGroupItem value={opt.id} id={`cm-${opt.id}`} />
-              <Label htmlFor={`cm-${opt.id}`} className="flex-1 cursor-pointer text-sm">{opt.label}</Label>
+              <Label htmlFor={`cm-${opt.id}`} className={OPTION_LABEL_CLASS}>{opt.label}</Label>
             </div>
           ))}
           {NEUTRAL_OPTIONS_RADIO.map((opt) => (
-            <div key={opt.id} className="flex items-center space-x-3 rounded-lg border border-dashed border-border p-3 transition-all hover:border-primary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+            <div key={opt.id} className={OPTION_ROW_NEUTRAL_CLASS}>
               <RadioGroupItem value={opt.id} id={`cm-${opt.id}`} />
-              <Label htmlFor={`cm-${opt.id}`} className="flex-1 cursor-pointer text-sm">{opt.label}</Label>
+              <Label htmlFor={`cm-${opt.id}`} className={OPTION_LABEL_CLASS}>{opt.label}</Label>
             </div>
           ))}
         </RadioGroup>
@@ -943,15 +969,15 @@ function buildScreens(): Screen[] {
       render: (fd, update) => (
         <RadioGroup value={fd.conflictContact} onValueChange={(v) => update({ conflictContact: v })} className="space-y-2">
           {[{ id: "ja", label: "Ja" }, { id: "nee", label: "Nee" }, { id: "weet-niet", label: "Weet ik nog niet" }].map((opt) => (
-            <div key={opt.id} className="flex items-center space-x-3 rounded-lg border border-border p-3 transition-all hover:border-primary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+            <div key={opt.id} className={OPTION_ROW_CLASS}>
               <RadioGroupItem value={opt.id} id={`cc-${opt.id}`} />
-              <Label htmlFor={`cc-${opt.id}`} className="flex-1 cursor-pointer text-sm">{opt.label}</Label>
+              <Label htmlFor={`cc-${opt.id}`} className={OPTION_LABEL_CLASS}>{opt.label}</Label>
             </div>
           ))}
           {NEUTRAL_OPTIONS_RADIO.map((opt) => (
-            <div key={opt.id} className="flex items-center space-x-3 rounded-lg border border-dashed border-border p-3 transition-all hover:border-primary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+            <div key={opt.id} className={OPTION_ROW_NEUTRAL_CLASS}>
               <RadioGroupItem value={opt.id} id={`cc-${opt.id}`} />
-              <Label htmlFor={`cc-${opt.id}`} className="flex-1 cursor-pointer text-sm">{opt.label}</Label>
+              <Label htmlFor={`cc-${opt.id}`} className={OPTION_LABEL_CLASS}>{opt.label}</Label>
             </div>
           ))}
         </RadioGroup>
@@ -968,15 +994,15 @@ function buildScreens(): Screen[] {
       render: (fd, update) => (
         <RadioGroup value={fd.conflictUitkomst} onValueChange={(v) => update({ conflictUitkomst: v })} className="space-y-2">
           {CONFLICT_UITKOMST.map((opt) => (
-            <div key={opt.id} className="flex items-center space-x-3 rounded-lg border border-border p-3 transition-all hover:border-primary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+            <div key={opt.id} className={OPTION_ROW_CLASS}>
               <RadioGroupItem value={opt.id} id={`cu-${opt.id}`} />
-              <Label htmlFor={`cu-${opt.id}`} className="flex-1 cursor-pointer text-sm">{opt.label}</Label>
+              <Label htmlFor={`cu-${opt.id}`} className={OPTION_LABEL_CLASS}>{opt.label}</Label>
             </div>
           ))}
           {NEUTRAL_OPTIONS_RADIO.map((opt) => (
-            <div key={opt.id} className="flex items-center space-x-3 rounded-lg border border-dashed border-border p-3 transition-all hover:border-primary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+            <div key={opt.id} className={OPTION_ROW_NEUTRAL_CLASS}>
               <RadioGroupItem value={opt.id} id={`cu-${opt.id}`} />
-              <Label htmlFor={`cu-${opt.id}`} className="flex-1 cursor-pointer text-sm">{opt.label}</Label>
+              <Label htmlFor={`cu-${opt.id}`} className={OPTION_LABEL_CLASS}>{opt.label}</Label>
             </div>
           ))}
         </RadioGroup>
@@ -1010,15 +1036,15 @@ function buildScreens(): Screen[] {
         <>
           <RadioGroup value={fd.priveDelen} onValueChange={(v) => update({ priveDelen: v })} className="space-y-2">
             {[{ id: "ja", label: "Ja, kort" }, { id: "gesprek", label: "Liever tijdens het gesprek" }, { id: "niet", label: "Liever niet" }].map((opt) => (
-              <div key={opt.id} className="flex items-center space-x-3 rounded-lg border border-border p-3 transition-all hover:border-primary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+              <div key={opt.id} className={OPTION_ROW_CLASS}>
                 <RadioGroupItem value={opt.id} id={`pd-${opt.id}`} />
-                <Label htmlFor={`pd-${opt.id}`} className="flex-1 cursor-pointer text-sm">{opt.label}</Label>
+                <Label htmlFor={`pd-${opt.id}`} className={OPTION_LABEL_CLASS}>{opt.label}</Label>
               </div>
             ))}
             {NEUTRAL_OPTIONS_RADIO.map((opt) => (
-              <div key={opt.id} className="flex items-center space-x-3 rounded-lg border border-dashed border-border p-3 transition-all hover:border-primary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+              <div key={opt.id} className={OPTION_ROW_NEUTRAL_CLASS}>
                 <RadioGroupItem value={opt.id} id={`pd-${opt.id}`} />
-                <Label htmlFor={`pd-${opt.id}`} className="flex-1 cursor-pointer text-sm">{opt.label}</Label>
+                <Label htmlFor={`pd-${opt.id}`} className={OPTION_LABEL_CLASS}>{opt.label}</Label>
               </div>
             ))}
           </RadioGroup>
@@ -1165,15 +1191,15 @@ function buildScreens(): Screen[] {
       render: (fd, update) => (
         <RadioGroup value={fd.energieHulp} onValueChange={(v) => update({ energieHulp: v })} className="space-y-2">
           {[{ id: "ja", label: "Ja" }, { id: "nee", label: "Nee" }, { id: "liever-niet", label: "Liever niet zeggen" }].map((opt) => (
-            <div key={opt.id} className="flex items-center space-x-3 rounded-lg border border-border p-3 transition-all hover:border-primary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+            <div key={opt.id} className={OPTION_ROW_CLASS}>
               <RadioGroupItem value={opt.id} id={`eh-${opt.id}`} />
-              <Label htmlFor={`eh-${opt.id}`} className="flex-1 cursor-pointer text-sm">{opt.label}</Label>
+              <Label htmlFor={`eh-${opt.id}`} className={OPTION_LABEL_CLASS}>{opt.label}</Label>
             </div>
           ))}
           {NEUTRAL_OPTIONS_RADIO.map((opt) => (
-            <div key={opt.id} className="flex items-center space-x-3 rounded-lg border border-dashed border-border p-3 transition-all hover:border-primary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+            <div key={opt.id} className={OPTION_ROW_NEUTRAL_CLASS}>
               <RadioGroupItem value={opt.id} id={`eh-${opt.id}`} />
-              <Label htmlFor={`eh-${opt.id}`} className="flex-1 cursor-pointer text-sm">{opt.label}</Label>
+              <Label htmlFor={`eh-${opt.id}`} className={OPTION_LABEL_CLASS}>{opt.label}</Label>
             </div>
           ))}
         </RadioGroup>
@@ -1193,7 +1219,7 @@ function buildScreens(): Screen[] {
       render: (fd, update) => (
         <div>
           <Slider value={[fd.combinatieVerdeling]} onValueChange={([v]) => update({ combinatieVerdeling: v })} min={0} max={100} step={5} className="w-full" />
-          <div className="mt-2 flex justify-between text-xs text-muted-foreground">
+          <div className={"mt-2 flex justify-between " + HELPER_TEXT_CLASS}>
             <span>Werk {fd.combinatieVerdeling}%</span>
             <span>Priv\u00e9 {100 - fd.combinatieVerdeling}%</span>
           </div>
@@ -1255,7 +1281,7 @@ function buildScreens(): Screen[] {
       render: (fd, update) => (
         <>
           <ScaleSlider value={fd.closingBelangrijk} onChange={(v) => update({ closingBelangrijk: v })} labelLeft="Handig" labelMid="Belangrijk" labelRight="Noodzakelijk" />
-          <p className="mt-3 text-xs text-muted-foreground italic">
+          <p className={"mt-3 italic " + HELPER_TEXT_CLASS}>
             We vragen dit zodat dit een concreet onderwerp wordt in het Time-out gesprek.
           </p>
         </>
@@ -1273,7 +1299,7 @@ function buildScreens(): Screen[] {
       render: (fd, update) => (
         <>
           <Textarea value={fd.randWelBereiken} onChange={(e) => update({ randWelBereiken: e.target.value })} placeholder="Bijv. rust en overzicht, duidelijke afspraken..." maxLength={200} rows={3} />
-          <p className="mt-1 text-xs text-muted-foreground">{fd.randWelBereiken.length}/200</p>
+          <p className={"mt-1 " + HELPER_TEXT_CLASS}>{fd.randWelBereiken.length}/200</p>
         </>
       ),
     },
@@ -1287,7 +1313,7 @@ function buildScreens(): Screen[] {
       render: (fd, update) => (
         <>
           <Textarea value={fd.randNietBereiken} onChange={(e) => update({ randNietBereiken: e.target.value })} placeholder="Bijv. geen beoordelingsgesprek, geen diagnose..." maxLength={200} rows={3} />
-          <p className="mt-1 text-xs text-muted-foreground">{fd.randNietBereiken.length}/200</p>
+          <p className={"mt-1 " + HELPER_TEXT_CLASS}>{fd.randNietBereiken.length}/200</p>
         </>
       ),
     },
@@ -1303,24 +1329,24 @@ function buildScreens(): Screen[] {
         <>
           <RadioGroup value={fd.terugkoppeling} onValueChange={(v) => update({ terugkoppeling: v })} className="space-y-2">
             {TERUGKOPPELING_OPTIONS.map((opt) => (
-              <div key={opt.id} className="flex items-center space-x-3 rounded-lg border border-border p-3 transition-all hover:border-primary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+              <div key={opt.id} className={OPTION_ROW_CLASS}>
                 <RadioGroupItem value={opt.id} id={`tk-${opt.id}`} />
-                <Label htmlFor={`tk-${opt.id}`} className="flex-1 cursor-pointer text-sm">{opt.label}</Label>
+                <Label htmlFor={`tk-${opt.id}`} className={OPTION_LABEL_CLASS}>{opt.label}</Label>
               </div>
             ))}
             {NEUTRAL_OPTIONS_RADIO.map((opt) => (
-              <div key={opt.id} className="flex items-center space-x-3 rounded-lg border border-dashed border-border p-3 transition-all hover:border-primary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+              <div key={opt.id} className={OPTION_ROW_NEUTRAL_CLASS}>
                 <RadioGroupItem value={opt.id} id={`tk-${opt.id}`} />
-                <Label htmlFor={`tk-${opt.id}`} className="flex-1 cursor-pointer text-sm">{opt.label}</Label>
+                <Label htmlFor={`tk-${opt.id}`} className={OPTION_LABEL_CLASS}>{opt.label}</Label>
               </div>
             ))}
           </RadioGroup>
-          <p className="mt-3 text-xs text-muted-foreground italic">
+          <p className={"mt-3 italic " + HELPER_TEXT_CLASS}>
             Er gaat geen terugkoppeling richting de werkgever zonder jouw expliciete toestemming.
           </p>
-          <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-xl border border-border p-4 transition-all hover:border-primary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+          <label className={"mt-4 flex cursor-pointer items-start gap-3 " + OPTION_ROW_CLASS}>
             <Checkbox checked={fd.terugkoppelingAkkoord} onCheckedChange={(c) => update({ terugkoppelingAkkoord: c === true })} className="mt-0.5" />
-            <span className="text-sm text-muted-foreground">Ik begrijp dat deze voorwaarden leidend zijn voor het gesprek</span>
+            <span className="text-sm font-medium text-foreground">Ik begrijp dat deze voorwaarden leidend zijn voor het gesprek</span>
           </label>
         </>
       ),
