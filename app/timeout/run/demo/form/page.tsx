@@ -1408,6 +1408,9 @@ export default function TimeoutFormPage() {
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [stepError, setStepError] = useState<string | null>(null)
+  const [showFeedbackField, setShowFeedbackField] = useState(false)
+  const [summaryFeedback, setSummaryFeedback] = useState("")
+  const [summaryError, setSummaryError] = useState<string | null>(null)
   const cardRef = useRef<HTMLDivElement>(null)
   const stepErrorRef = useRef<HTMLParagraphElement>(null)
 
@@ -1660,7 +1663,11 @@ export default function TimeoutFormPage() {
                   </Card>
 
                   <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-                    <Button variant="outline" onClick={handleBack} className="rounded-xl bg-transparent">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowFeedbackField((v) => !v)}
+                      className="rounded-xl bg-transparent"
+                    >
                       Nee, ik wil aanpassen
                     </Button>
                     <Button onClick={() => setShowConfirmModal(true)} className="rounded-xl">
@@ -1668,6 +1675,94 @@ export default function TimeoutFormPage() {
                       Ja, dit klopt - delen met time-out coach
                     </Button>
                   </div>
+
+                  {showFeedbackField && (
+                    <Card className="mt-6 rounded-2xl border-primary/20 bg-primary/5">
+                      <CardContent className="p-6">
+                        <Label htmlFor="summary-feedback" className={QUESTION_LABEL_CLASS + " mb-1"}>
+                          Wat wil je laten aanpassen?
+                        </Label>
+                        <p className={"mb-3 " + HELPER_TEXT_CLASS}>
+                          Beschrijf in je eigen woorden wat er in de samenvatting anders moet. We passen de tekst aan en tonen de nieuwe versie.
+                        </p>
+                        <Textarea
+                          id="summary-feedback"
+                          value={summaryFeedback}
+                          onChange={(e) => {
+                            setSummaryFeedback(e.target.value)
+                            setSummaryError(null)
+                          }}
+                          placeholder="Bijvoorbeeld: de volgorde van wat er speelt klopt niet, of ik mis dat..."
+                          rows={4}
+                          maxLength={800}
+                          className="mb-4"
+                          disabled={isGenerating}
+                        />
+                        {summaryError && (
+                          <p className="mb-3 text-sm text-destructive" role="alert">
+                            {summaryError}
+                          </p>
+                        )}
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            onClick={async () => {
+                              const text = summaryFeedback.trim()
+                              if (!text) {
+                                setSummaryError("Vul in wat je wilt aanpassen.")
+                                return
+                              }
+                              setSummaryError(null)
+                              setIsGenerating(true)
+                              try {
+                                const res = await fetch("/api/timeout/summarize", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({
+                                    formData,
+                                    currentSummary: summaryText ?? "",
+                                    feedback: text,
+                                  }),
+                                })
+                                const data = await res.json()
+                                if (!res.ok) {
+                                  setSummaryError(data?.error ?? "Aanpassen mislukt. Probeer het later opnieuw.")
+                                  return
+                                }
+                                const newSummary = data?.summary ?? ""
+                                if (newSummary) {
+                                  setSummaryText(newSummary)
+                                  setSummaryFeedback("")
+                                  setShowFeedbackField(false)
+                                } else {
+                                  setSummaryError("Geen nieuwe samenvatting ontvangen. Probeer het opnieuw.")
+                                }
+                              } catch {
+                                setSummaryError("Er ging iets mis. Probeer het later opnieuw.")
+                              } finally {
+                                setIsGenerating(false)
+                              }
+                            }}
+                            disabled={isGenerating}
+                            className="rounded-xl"
+                          >
+                            {isGenerating ? "Bezig met aanpassen..." : "Pas samenvatting aan"}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setShowFeedbackField(false)
+                              setSummaryFeedback("")
+                              setSummaryError(null)
+                            }}
+                            disabled={isGenerating}
+                            className="rounded-xl bg-transparent"
+                          >
+                            Annuleren
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
                 </>
               )}
             </>
