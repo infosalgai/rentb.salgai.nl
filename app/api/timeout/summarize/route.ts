@@ -166,8 +166,10 @@ function buildUserPrompt(fd: Record<string, unknown>): string {
   // —— Route-specifiek ——
   if (hoofdoorzaak === "werkdruk" || hoofdoorzaak === "incident") {
     pushArray(lines, "Wat geeft je nu de meeste druk", fd.werkdrukDruk);
-    pushLine(lines, "Hoe lang speelt dit al", label(WERKDRUK_DUUR_LABELS, fd.werkdrukDuur) || fd.werkdrukDuur);
-    pushArray(lines, "Wat heb je al geprobeerd", fd.werkdrukGeprobeerd);
+    if (fd.werkdrukDuur) {
+      pushLine(lines, "Hoe lang speelt dit al", label(WERKDRUK_DUUR_LABELS, fd.werkdrukDuur) || fd.werkdrukDuur);
+    }
+    pushArray(lines, "Wat heb je al geprobeerd om een Time-Out of Verzuim te voorkomen", fd.werkdrukGeprobeerd);
     const helptLabel = label(WERKDRUK_HELPT_LABELS, fd.werkdrukHelpt) || String(fd.werkdrukHelpt ?? "");
     pushLine(lines, "Wat zou de komende 1–2 weken het meest helpen", helptLabel);
     pushLine(lines, "Wat zou helpen (eigen woorden)", fd.werkdrukHelptAnders);

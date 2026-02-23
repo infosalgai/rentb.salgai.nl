@@ -146,13 +146,6 @@ const WERKDRUK_DRUK = [
   "Onduidelijke prioriteiten",
 ]
 
-const WERKDRUK_DUUR = [
-  { id: "kort", label: "Kort" },
-  { id: "weken", label: "Enkele weken" },
-  { id: "maanden", label: "Enkele maanden" },
-  { id: "lang", label: "Langere tijd" },
-]
-
 const WERKDRUK_GEPROBEERD = [
   "Gesprek collega",
   "Gesprek leidinggevende",
@@ -233,7 +226,7 @@ const CLOSING_OPTIONS = [
 const TERUGKOPPELING_OPTIONS = [
   { id: "praktisch", label: "Ja, alleen praktisch (uren / taken / planning)" },
   { id: "thema", label: "Ja, ook het hoofdthema in één zin" },
-  { id: "na-gesprek", label: "Ja, maar pas na het Time-out gesprek" },
+  { id: "na-gesprek", label: "Ja, maar pas na het Time-Out gesprek" },
   { id: "nee", label: "Nee, nog niet" },
 ]
 
@@ -613,7 +606,7 @@ function buildScreens(): Screen[] {
     {
       id: "hoofdoorzaak",
       group: "Situatie",
-      title: "Wat brengt jou tot deze aanvraag?",
+      title: "Wat brengt jou tot deze Time-Out aanvraag?",
       subtitle: "Kies wat nu het meest speelt.",
       topic: "Psychische gezondheid",
       tooltip: "Hier gaat het om wat jou vooral richting een time-out brengt, zonder in medische details te gaan.",
@@ -683,7 +676,7 @@ function buildScreens(): Screen[] {
       id: "factoren",
       group: "Situatie",
       title: "Spelen er nog andere factoren mee?",
-      subtitle: "Meerdere mogelijk, optioneel. Bijvoorbeeld privé, thuis of andere omstandigheden buiten het werk.",
+      subtitle: "Meerdere opties mogelijk, optioneel. Bijvoorbeeld privé, thuis of andere omstandigheden buiten het werk.",
       topic: "Sociale gezondheid",
       tooltip: "Hier kun je aangeven welke dingen naast je werk of binnen je werk het zwaarder maken.",
       multiChoiceField: "factoren",
@@ -732,26 +725,9 @@ function buildScreens(): Screen[] {
       ),
     },
     {
-      id: "risico",
-      group: "Situatie",
-      title: "Hoe groot is de kans dat dit zonder verandering richting verzuim gaat?",
-      topic: "Medische gezondheid",
-      tooltip: "Dit gaat over jouw gevoel van risico op uitval, niet om een medische inschatting.",
-      required: false,
-      render: (fd, update) => (
-        <ScaleSlider
-          value={fd.risico}
-          onChange={(v) => update({ risico: v })}
-          labelLeft="Nauwelijks"
-          labelMid="Twijfel"
-          labelRight="Zeer groot"
-        />
-      ),
-    },
-    {
       id: "signalen",
       group: "Situatie",
-      title: "Welke signalen herken je bij jezelf op het werk?",
+      title: "Welke signalen herken je bij jezelf?",
       subtitle: "Meerdere antwoorden mogelijk. Kies wat nu het beste past.",
       topic: "Medische gezondheid",
       tooltip: "Dit gaat om wat je zelf merkt in je gedrag of lichaam op het werk, zonder medische conclusies.",
@@ -779,12 +755,29 @@ function buildScreens(): Screen[] {
       },
     },
     {
+      id: "risico",
+      group: "Situatie",
+      title: "Hoe groot is de kans dat dit zonder verandering richting verzuim gaat?",
+      topic: "Medische gezondheid",
+      tooltip: "Dit gaat over jouw gevoel van risico op uitval, niet om een medische inschatting.",
+      required: false,
+      render: (fd, update) => (
+        <ScaleSlider
+          value={fd.risico}
+          onChange={(v) => update({ risico: v })}
+          labelLeft="Nauwelijks"
+          labelMid="Twijfel"
+          labelRight="Zeer groot"
+        />
+      ),
+    },
+    {
       id: "doelen",
       group: "Situatie",
-      title: "Wat wil je uit het eerste gesprek halen?",
+      title: "Wat wil je uit het eerste Time-Out gesprek halen?",
       subtitle: "Kies maximaal 2.",
       topic: "Psychische gezondheid",
-      tooltip: "Dit helpt de time-out coach om het gesprek aan te laten sluiten op jouw behoefte.",
+      tooltip: "Dit helpt de Time-Out coach om het gesprek aan te laten sluiten op jouw behoefte.",
       multiChoiceField: "doelen",
       optionalNoteField: "doelenToelichting",
       render: (fd, update, toggleMulti, getMulti) => {
@@ -795,19 +788,14 @@ function buildScreens(): Screen[] {
             {fd.doelen.length >= 2 && !fd.doelen.includes(CHECKBOX_NOT_RELEVANT.value) && (
               <p className={"mt-2 " + HELPER_TEXT_CLASS}>Maximum bereikt. Deselecteer er een om te wisselen.</p>
             )}
+            {QUESTION_DIVIDER}
+            <div>
+              <Label className={QUESTION_LABEL_CLASS}>Hoe belangrijk is dit Time-Out gesprek voor je momenteel?</Label>
+              <ScaleSlider value={fd.belangrijkheid} onChange={(v) => update({ belangrijkheid: v })} labelLeft="Handig" labelMid="Belangrijk" labelRight="Noodzakelijk" />
+            </div>
           </>
         )
       },
-    },
-    {
-      id: "belangrijkheid",
-      group: "Situatie",
-      title: "Hoe belangrijk is dit gesprek voor je op dit moment?",
-      topic: "Psychische gezondheid",
-      tooltip: "Dit geeft aan hoeveel urgentie jij zelf voelt bij het voeren van dit gesprek.",
-      render: (fd, update) => (
-        <ScaleSlider value={fd.belangrijkheid} onChange={(v) => update({ belangrijkheid: v })} labelLeft="Handig" labelMid="Belangrijk" labelRight="Noodzakelijk" />
-      ),
     },
 
     // ─── GROUP 2: VERDIEPING ───
@@ -828,34 +816,9 @@ function buildScreens(): Screen[] {
       },
     },
     {
-      id: "werkdruk-duur",
-      group: "Verdieping",
-      title: "Hoe lang speelt dit al?",
-      isVisible: (fd) => fd.hoofdoorzaak === "werkdruk" || fd.hoofdoorzaak === "incident",
-      topic: "Psychische gezondheid",
-      tooltip: "Dit zegt iets over hoe lang je deze druk al zo ervaart.",
-      choiceField: "werkdrukDuur",
-      render: (fd, update) => (
-        <RadioGroup value={fd.werkdrukDuur} onValueChange={(v) => update({ werkdrukDuur: v })} className="space-y-2">
-          {WERKDRUK_DUUR.map((opt) => (
-            <div key={opt.id} className={OPTION_ROW_CLASS}>
-              <RadioGroupItem value={opt.id} id={`wd-${opt.id}`} />
-              <Label htmlFor={`wd-${opt.id}`} className={OPTION_LABEL_CLASS}>{opt.label}</Label>
-            </div>
-          ))}
-          {NEUTRAL_OPTIONS_RADIO.map((opt) => (
-            <div key={opt.id} className={OPTION_ROW_NEUTRAL_CLASS}>
-              <RadioGroupItem value={opt.id} id={`wd-${opt.id}`} />
-              <Label htmlFor={`wd-${opt.id}`} className={OPTION_LABEL_CLASS}>{opt.label}</Label>
-            </div>
-          ))}
-        </RadioGroup>
-      ),
-    },
-    {
       id: "werkdruk-geprobeerd",
       group: "Verdieping",
-      title: "Wat heb je al geprobeerd?",
+      title: "Wat heb je al geprobeerd om een Time-Out of Verzuim te voorkomen?",
       subtitle: "Meerdere opties mogelijk.",
       isVisible: (fd) => fd.hoofdoorzaak === "werkdruk" || fd.hoofdoorzaak === "incident",
       topic: "Sociale gezondheid",
@@ -936,7 +899,7 @@ function buildScreens(): Screen[] {
     {
       id: "conflict-waarover",
       group: "Verdieping",
-      title: "Waar gaat het vooral over?",
+      title: "Waar gaat de spanning of het conflict vooral over?",
       subtitle: "Meerdere opties mogelijk.",
       isVisible: (fd) => fd.hoofdoorzaak === "samenwerking",
       topic: "Sociale gezondheid",
@@ -986,7 +949,7 @@ function buildScreens(): Screen[] {
     {
       id: "conflict-uitkomst",
       group: "Verdieping",
-      title: "Gewenste uitkomst van het gesprek",
+      title: "Gewenste uitkomst van het Time-Out gesprek",
       isVisible: (fd) => fd.hoofdoorzaak === "samenwerking",
       topic: "Psychische gezondheid",
       tooltip: "Wat hoop je dat het gesprek oplevert rondom de samenwerking of het conflict?",
@@ -1013,7 +976,7 @@ function buildScreens(): Screen[] {
     {
       id: "prive-waarover",
       group: "Verdieping",
-      title: "Waar gaat het vooral over?",
+      title: "Waar gaat het privé vooral over?",
       subtitle: "Meerdere opties mogelijk.",
       isVisible: (fd) => fd.hoofdoorzaak === "prive",
       topic: "Sociale gezondheid",
@@ -1030,7 +993,7 @@ function buildScreens(): Screen[] {
       title: "Wil je vooraf al iets delen?",
       isVisible: (fd) => fd.hoofdoorzaak === "prive",
       topic: "Sociale gezondheid",
-      tooltip: "Je kiest zelf of je nu al iets kort wilt delen of liever wacht tot het gesprek.",
+      tooltip: "Je kiest zelf of je nu al iets kort wilt delen of liever wacht tot het Time-Out gesprek.",
       choiceField: "priveDelen",
       render: (fd, update) => (
         <>
@@ -1251,7 +1214,7 @@ function buildScreens(): Screen[] {
       render: () => (
         <div className="rounded-xl border border-border bg-secondary/20 p-5">
           <p className="text-sm text-muted-foreground">
-            In het gesprek met je time-out coach kun je hier dieper op ingaan. Ga verder naar de volgende vraag.
+            In het gesprek met je Time-Out coach kun je hier dieper op ingaan. Ga verder naar de volgende vraag.
           </p>
         </div>
       ),
@@ -1267,25 +1230,22 @@ function buildScreens(): Screen[] {
       tooltip: "Dit gaat om wat jou kan helpen om uitval te voorkomen, vooral in afspraken en ondersteuning.",
       multiChoiceField: "closingNodig",
       optionalNoteField: "closingToelichting",
-      render: (fd, _, toggleMulti, getMulti) => {
+      render: (fd, update, toggleMulti, getMulti) => {
         const onToggle = getMulti ? (v: string) => getMulti("closingNodig")(v) : (v: string) => toggleMulti("closingNodig", v)
-        return <CheckboxList options={CLOSING_OPTIONS} selected={fd.closingNodig} onToggle={onToggle} showNotRelevant />
+        return (
+          <>
+            <CheckboxList options={CLOSING_OPTIONS} selected={fd.closingNodig} onToggle={onToggle} showNotRelevant />
+            {QUESTION_DIVIDER}
+            <div>
+              <Label className={QUESTION_LABEL_CLASS}>Hoe belangrijk is dat voor je?</Label>
+              <ScaleSlider value={fd.closingBelangrijk} onChange={(v) => update({ closingBelangrijk: v })} labelLeft="Handig" labelMid="Belangrijk" labelRight="Noodzakelijk" />
+              <p className={"mt-3 italic " + HELPER_TEXT_CLASS}>
+                We vragen dit zodat dit een concreet onderwerp wordt in het Time-Out gesprek.
+              </p>
+            </div>
+          </>
+        )
       },
-    },
-    {
-      id: "closing-belangrijk",
-      group: "Verdieping",
-      title: "Hoe belangrijk is dat voor je?",
-      topic: "Psychische gezondheid",
-      tooltip: "Dit geeft aan hoeveel gewicht je zelf aan deze afspraken of steun hecht.",
-      render: (fd, update) => (
-        <>
-          <ScaleSlider value={fd.closingBelangrijk} onChange={(v) => update({ closingBelangrijk: v })} labelLeft="Handig" labelMid="Belangrijk" labelRight="Noodzakelijk" />
-          <p className={"mt-3 italic " + HELPER_TEXT_CLASS}>
-            We vragen dit zodat dit een concreet onderwerp wordt in het Time-out gesprek.
-          </p>
-        </>
-      ),
     },
 
     // ─── GROUP 3: RANDVOORWAARDEN ───
@@ -1293,7 +1253,7 @@ function buildScreens(): Screen[] {
       id: "rand-wel",
       group: "Randvoorwaarden",
       required: false,
-      title: "Wat wil je absoluut wel bereiken met deze time-out?",
+      title: "Wat wil je absoluut wel bereiken met deze Time-Out?",
       topic: "Psychische gezondheid",
       tooltip: "Hier kun je beschrijven wat jij hoopt dat dit traject jou oplevert.",
       render: (fd, update) => (
@@ -1307,7 +1267,7 @@ function buildScreens(): Screen[] {
       id: "rand-niet",
       group: "Randvoorwaarden",
       required: false,
-      title: "Wat wil je absoluut niet dat dit gesprek wordt?",
+      title: "Wat wil je absoluut niet dat dit Time-Out gesprek wordt?",
       topic: "Sociale gezondheid",
       tooltip: "Hier kun je aangeven wat je liever niet wilt dat er gebeurt in of rond het gesprek.",
       render: (fd, update) => (
@@ -1478,11 +1438,13 @@ export default function TimeoutFormPage() {
     })
   }, [])
 
-  /** Voor multi-choice: bij "not_relevant" alleen die waarde; bij andere waarde not_relevant uitzetten en toggle. */
+  /** Voor multi-choice: bij "not_relevant" alleen die waarde (of deselecteren als al gekozen); bij andere waarde not_relevant uitzetten en toggle. */
   const getMultiToggleWithNotRelevant = useCallback((field: keyof FormData) => (value: string, max?: number) => {
     setFormData((prev) => {
       const current = (prev[field] as string[]) ?? []
       if (value === CHECKBOX_NOT_RELEVANT.value) {
+        const onlyNotRelevant = current.length === 1 && current[0] === CHECKBOX_NOT_RELEVANT.value
+        if (onlyNotRelevant) return { ...prev, [field]: [] }
         return { ...prev, [field]: [CHECKBOX_NOT_RELEVANT.value] }
       }
       const withoutNotRelevant = current.filter((v) => v !== CHECKBOX_NOT_RELEVANT.value)
