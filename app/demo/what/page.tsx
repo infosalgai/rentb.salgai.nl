@@ -87,20 +87,24 @@ export default function DemoRouteSelectionPage() {
               </p>
             </div>
 
-            {/* Route Options */}
+            {/* Route Options – alleen "Time-out" is klikbaar; Navigatiegesprek blurred */}
             <div className="mb-6 space-y-3">
               {ROUTES.map((route) => {
                 const Icon = route.icon
+                const isTimeout = route.value === "timeout"
                 const isSelected = selectedRoute === route.value
                 return (
                   <button
                     key={route.value}
                     type="button"
-                    onClick={() => setSelectedRoute(route.value)}
+                    disabled={!isTimeout}
+                    onClick={() => isTimeout && setSelectedRoute(route.value)}
                     className={`flex w-full items-start gap-4 rounded-xl border-2 p-4 text-left transition-all ${
-                      isSelected
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:border-primary/30 hover:bg-secondary/50"
+                      !isTimeout
+                        ? "cursor-not-allowed select-none border-border opacity-80 blur-sm"
+                        : isSelected
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/30 hover:bg-secondary/50"
                     }`}
                   >
                     <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
