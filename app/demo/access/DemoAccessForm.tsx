@@ -89,7 +89,7 @@ export function DemoAccessForm({ next }: { next: string }) {
         </form>
         <p className="text-center text-xs text-muted-foreground">
           <a
-            href="/demo/access?reset=1"
+            href={next !== "/demo" ? `/demo/access/reset?next=${encodeURIComponent(next)}` : "/demo/access/reset"}
             className="underline hover:text-foreground"
           >
             Code opnieuw invoeren

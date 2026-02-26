@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next"
 import { Nunito_Sans } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { PwaInstallPrompt } from "@/components/pwa-install-prompt"
+import { Toaster } from "@/components/ui/toaster"
 import "./globals.css"
 
 const nunitoSans = Nunito_Sans({
@@ -57,6 +58,7 @@ export default function RootLayout({
     <html lang="nl" className={nunitoSans.className}>
       <body className="antialiased">
         {children}
+        <Toaster />
         <PwaInstallPrompt />
         <Analytics />
       </body>
