@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -14,8 +14,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { NavHeader } from "@/components/nav-header"
-import { Shield, Send, Edit, CheckCircle, Clock, Loader2 } from "lucide-react"
+import { Shield, Send, Edit, CheckCircle, Loader2, User, MessageSquare } from "lucide-react"
 import { getDemoContext } from "@/lib/demo-data"
+import type { TaskFromSummary } from "@/lib/task/taskSchema"
+import { EXPERT_TYPE_LABELS } from "@/lib/task/taskSchema"
+import { useToast } from "@/hooks/use-toast"
 
 // Mock narrative based on form data
 function generateNarrative(formData: FormDataType | null): string {
@@ -176,12 +179,17 @@ interface FormDataType {
   contactWerkgever: string
 }
 
+const TASK_STORAGE_KEY = "timeoutTask"
+
 export default function TimeoutSummaryPage() {
   const router = useRouter()
+  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [narrative, setNarrative] = useState("")
+  const [task, setTask] = useState<TaskFromSummary | null>(null)
+  const [taskLoading, setTaskLoading] = useState(false)
 
   useEffect(() => {
     const { role, route } = getDemoContext()
@@ -197,6 +205,14 @@ export default function TimeoutSummaryPage() {
       const savedNarrative = sessionStorage.getItem("timeoutNarrative")
       if (savedNarrative) {
         setNarrative(savedNarrative)
+      }
+      const savedTask = sessionStorage.getItem(TASK_STORAGE_KEY)
+      if (savedTask) {
+        try {
+          setTask(JSON.parse(savedTask) as TaskFromSummary)
+        } catch {
+          /* ignore */
+        }
       }
       setIsLoading(false)
       return
@@ -234,10 +250,44 @@ export default function TimeoutSummaryPage() {
     setShowConfirmModal(true)
   }
 
-  const handleConfirmSend = () => {
-    setShowConfirmModal(false)
-    sessionStorage.setItem("timeoutSubmitted", "true")
-    setIsSubmitted(true)
+  const handleConfirmSend = async () => {
+    setTaskLoading(true)
+    try {
+      const res = await fetch("/api/timeout/task-from-summary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirmedSummary: narrative }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.ok || !data.task) {
+        toast({
+          variant: "destructive",
+          title: "Fout",
+          description: data.error ?? "Opdracht kon niet worden gegenereerd.",
+        })
+        return
+      }
+      setTask(data.task)
+      sessionStorage.setItem(TASK_STORAGE_KEY, JSON.stringify(data.task))
+      setShowConfirmModal(false)
+      sessionStorage.setItem("timeoutSubmitted", "true")
+      setIsSubmitted(true)
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Fout",
+        description: "Opdracht kon niet worden gegenereerd.",
+      })
+    } finally {
+      setTaskLoading(false)
+    }
+  }
+
+  const handleSendToCoach = () => {
+    toast({
+      title: "Verzonden",
+      description: "De opdracht is naar de Time-out coach gestuurd.",
+    })
   }
 
   const handleEdit = () => {
@@ -326,6 +376,90 @@ export default function TimeoutSummaryPage() {
             </CardContent>
           </Card>
 
+          {/* Task preview (after submit) */}
+          {isSubmitted && task && (
+            <div className="mb-6 space-y-4">
+              <Card className="rounded-2xl">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <User className="h-5 w-5" />
+                    Aanbevolen expert
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <p className="mb-1 text-sm font-medium text-muted-foreground">
+                      Primair
+                    </p>
+                    <p className="font-medium">
+                      {EXPERT_TYPE_LABELS[task.recommended_expert.primary.type] ??
+                        task.recommended_expert.primary.type}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {task.recommended_expert.primary.motivation}
+                    </p>
+                  </div>
+                  {task.recommended_expert.alternatives.length > 0 && (
+                    <div>
+                      <p className="mb-1 text-sm font-medium text-muted-foreground">
+                        Alternatieven
+                      </p>
+                      <ul className="space-y-2">
+                        {task.recommended_expert.alternatives.map((alt, i) => (
+                          <li key={i}>
+                            <span className="font-medium">
+                              {EXPERT_TYPE_LABELS[alt.type] ?? alt.type}
+                            </span>
+                            <span className="ml-2 text-sm text-muted-foreground">
+                              — {alt.motivation}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-2xl">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <MessageSquare className="h-5 w-5" />
+                    Gesprekspunten voor Time-Out gesprek
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-4">
+                    {task.conversation_points.map((cp, i) => (
+                      <li key={i} className="rounded-lg border p-4">
+                        <p className="mb-1 font-medium text-foreground">
+                          {cp.topic}
+                        </p>
+                        <p className="mb-2 text-sm text-muted-foreground">
+                          Doel: {cp.goal}
+                        </p>
+                        <p className="text-sm italic">
+                          Vraag voor coach: {cp.coach_prompt_question}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <div className="flex justify-center">
+                <Button
+                  onClick={handleSendToCoach}
+                  className="rounded-xl"
+                  size="lg"
+                >
+                  <Send className="mr-2 h-4 w-4" />
+                  Versturen naar Time-out coach
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Action buttons */}
           {!isSubmitted && (
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
@@ -374,12 +508,26 @@ export default function TimeoutSummaryPage() {
               variant="outline"
               onClick={() => setShowConfirmModal(false)}
               className="rounded-xl"
+              disabled={taskLoading}
             >
               Nog even checken
             </Button>
-            <Button onClick={handleConfirmSend} className="rounded-xl">
-              <Send className="mr-2 h-4 w-4" />
-              Ja, versturen
+            <Button
+              onClick={handleConfirmSend}
+              className="rounded-xl"
+              disabled={taskLoading}
+            >
+              {taskLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Bezig…
+                </>
+              ) : (
+                <>
+                  <Send className="mr-2 h-4 w-4" />
+                  Ja, versturen
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
