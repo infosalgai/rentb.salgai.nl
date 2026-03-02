@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
+import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { X, Share, Smartphone } from "lucide-react"
 
@@ -13,6 +14,7 @@ const STORAGE_KEY = "pwa-install-dismissed"
 const IOS_PROMPT_KEY = "pwa-ios-prompt-dismissed"
 
 export function PwaInstallPrompt() {
+  const pathname = usePathname()
   const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null)
   const [showAndroidPrompt, setShowAndroidPrompt] = useState(false)
   const [showIosPrompt, setShowIosPrompt] = useState(false)
@@ -78,7 +80,7 @@ export function PwaInstallPrompt() {
     }
   }
 
-  if (isInstalled) return null
+  if (isInstalled || pathname === "/aanbod") return null
 
   return (
     <>
