@@ -125,12 +125,12 @@ export function OfferPageClient() {
   }, [])
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8 print:py-4">
-      <div className="grid gap-8 lg:grid-cols-[1fr_340px]">
+    <main className="mx-auto min-w-0 max-w-6xl px-4 py-6 sm:py-8 print:py-4">
+      <div className="grid gap-6 lg:grid-cols-[1fr_340px] lg:gap-8">
         {/* Left: Modules */}
-        <div className="space-y-6">
-          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-6">
-            <h1 className="mb-3 text-2xl font-semibold text-primary print:text-foreground">
+        <div className="min-w-0 space-y-6">
+          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:p-6">
+            <h1 className="mb-3 text-xl font-semibold text-primary sm:text-2xl print:text-foreground">
               Time-out offerte van Salgai voor Vrieling VitalR
             </h1>
             <p className="text-sm leading-relaxed text-foreground">
@@ -252,7 +252,7 @@ export function OfferPageClient() {
         </div>
 
         {/* Right: Summary panel */}
-        <div className="lg:sticky lg:top-8 lg:self-start">
+        <div className="min-w-0 lg:sticky lg:top-8 lg:self-start">
           <Card className="rounded-2xl shadow-sm print:shadow-none print:static">
             <CardHeader>
               <CardTitle className="text-lg">Samenvatting</CardTitle>
