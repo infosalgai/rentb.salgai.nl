@@ -125,7 +125,7 @@ export default function DemoRouteSelectionPage() {
             </div>
 
             {/* Buttons */}
-            <div className="flex gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row">
               <Button
                 variant="outline"
                 className="flex-1 rounded-xl bg-transparent"

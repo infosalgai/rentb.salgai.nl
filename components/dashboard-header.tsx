@@ -24,28 +24,28 @@ export function DashboardHeader({ role, route, showBack = false, backHref = "/" 
   const routeConfig = route ? ROUTE_CONFIG[route] : null
   
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-card">
-      <div className="mx-auto flex h-14 max-w-[900px] items-center justify-between px-4">
+    <header className="sticky top-0 z-50 border-b border-border bg-card safe-area-inset-top">
+      <div className="mx-auto flex h-14 min-h-[3.5rem] max-w-[900px] items-center justify-between gap-2 px-4 sm:gap-4">
         {/* Left: Logo */}
-        <Link href="/demo" className="flex items-center">
+        <Link href="/demo" className="flex shrink-0 items-center min-h-[44px] min-w-[44px]">
           <Image
             src="/images/vitalr-logo.png"
             alt="Vitalr"
             width={167}
             height={40}
-            className="h-8 w-auto"
+            className="h-7 w-auto sm:h-8"
             priority
           />
         </Link>
 
-        {/* Center: Role + Route Badge */}
+        {/* Center: Role + Route Badge - hidden on very small, visible from sm */}
         <TooltipProvider>
-          <div className="flex items-center gap-2">
+          <div className="hidden min-w-0 flex-1 items-center justify-center gap-1.5 sm:flex sm:gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground">
-                  {roleConfig.label}
-                  <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                <div className="flex items-center gap-1 rounded-full bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground sm:gap-1.5 sm:px-3 sm:text-sm">
+                  <span className="truncate">{roleConfig.label}</span>
+                  <Info className="h-3 w-3 shrink-0 text-muted-foreground sm:h-3.5 sm:w-3.5" />
                 </div>
               </TooltipTrigger>
               <TooltipContent>
@@ -53,23 +53,23 @@ export function DashboardHeader({ role, route, showBack = false, backHref = "/" 
               </TooltipContent>
             </Tooltip>
             {routeConfig && (
-              <div className="rounded-full bg-accent/20 px-3 py-1 text-sm font-medium text-accent">
+              <div className="shrink-0 rounded-full bg-accent/20 px-2 py-1 text-xs font-medium text-accent sm:px-3 sm:text-sm">
                 {routeConfig.shortLabel}
               </div>
             )}
           </div>
         </TooltipProvider>
 
-        {/* Right: Actions */}
-        <div className="flex items-center gap-1">
+        {/* Right: Actions - touch-friendly */}
+        <div className="flex shrink-0 items-center gap-1">
           <Button
             variant="ghost"
             size="sm"
             asChild
-            className="text-muted-foreground hover:text-accent"
+            className="min-h-[44px] min-w-[44px] text-muted-foreground hover:text-accent sm:min-w-0 sm:px-3"
           >
             <Link href="/demo">
-              <RefreshCw className="mr-1.5 h-4 w-4" />
+              <RefreshCw className="h-4 w-4 sm:mr-1.5" />
               <span className="hidden sm:inline">Switch rol</span>
             </Link>
           </Button>
@@ -77,10 +77,10 @@ export function DashboardHeader({ role, route, showBack = false, backHref = "/" 
             variant="ghost"
             size="sm"
             asChild
-            className="text-muted-foreground hover:text-accent"
+            className="min-h-[44px] min-w-[44px] text-muted-foreground hover:text-accent sm:min-w-0 sm:px-3"
           >
             <Link href="/demo/what">
-              <Repeat className="mr-1.5 h-4 w-4" />
+              <Repeat className="h-4 w-4 sm:mr-1.5" />
               <span className="hidden sm:inline">Switch route</span>
             </Link>
           </Button>
@@ -89,10 +89,10 @@ export function DashboardHeader({ role, route, showBack = false, backHref = "/" 
               variant="ghost"
               size="sm"
               asChild
-              className="text-muted-foreground hover:text-accent"
+              className="min-h-[44px] min-w-[44px] text-muted-foreground hover:text-accent sm:min-w-0 sm:px-3"
             >
               <Link href={backHref}>
-                <ArrowLeft className="mr-1.5 h-4 w-4" />
+                <ArrowLeft className="h-4 w-4 sm:mr-1.5" />
                 <span className="hidden sm:inline">Terug</span>
               </Link>
             </Button>

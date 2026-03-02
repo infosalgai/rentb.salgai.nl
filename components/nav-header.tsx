@@ -11,22 +11,22 @@ interface NavHeaderProps {
 
 export function NavHeader({ showBack = true, backHref = "/" }: NavHeaderProps) {
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-card">
-      <div className="mx-auto flex h-14 max-w-[900px] items-center justify-between px-4">
-        <Link href="/demo" className="flex items-center">
+    <header className="sticky top-0 z-50 border-b border-border bg-card safe-area-inset-top">
+      <div className="mx-auto flex h-14 min-h-[3.5rem] max-w-[900px] items-center justify-between gap-2 px-4">
+        <Link href="/demo" className="flex min-h-[44px] min-w-[44px] shrink-0 items-center">
           <Image
             src="/images/vitalr-logo.png"
             alt="Vitalr"
             width={167}
             height={40}
-            className="h-8 w-auto"
+            className="h-7 w-auto sm:h-8"
             priority
           />
         </Link>
         {showBack && (
-          <Link 
+          <Link
             href={backHref}
-            className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-accent"
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-accent sm:min-w-0 sm:justify-start sm:pr-2"
           >
             <ArrowLeft className="h-4 w-4" />
             Terug

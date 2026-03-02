@@ -62,18 +62,18 @@ function RequestCard({ request }: { request: EmployeeRequest }) {
   }
 
   return (
-    <div className="flex items-center justify-between rounded-xl border border-border bg-card p-4">
-      <div className="flex items-center gap-4">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
+    <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex min-w-0 flex-1 items-center gap-4">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary">
           <FileText className="h-5 w-5 text-muted-foreground" />
         </div>
-        <div>
-          <div className="flex items-center gap-2">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
             <p className="font-medium text-foreground">{request.id}</p>
             <StatusChip status={request.status} />
           </div>
-          <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-            <Clock className="h-3 w-3" />
+          <div className="mt-0.5 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs text-muted-foreground">
+            <Clock className="h-3 w-3 shrink-0" />
             <span>Aangemaakt: {request.createdDate}</span>
             {request.updatedDate !== request.createdDate && (
               <span>• Bijgewerkt: {request.updatedDate}</span>
@@ -81,7 +81,7 @@ function RequestCard({ request }: { request: EmployeeRequest }) {
           </div>
         </div>
       </div>
-      {getActionButton()}
+      <div className="shrink-0 sm:pl-2">{getActionButton()}</div>
     </div>
   )
 }
