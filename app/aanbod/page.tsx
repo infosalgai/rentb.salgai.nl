@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function AanbodPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen min-w-0 overflow-x-hidden bg-background">
       <OfferPageClient />
     </div>
   )
