@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, FormEvent } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -14,7 +14,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Printer } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { Info, Printer } from "lucide-react"
 
 export interface OfferModule {
   id: string
@@ -74,7 +77,7 @@ const MODULES: OfferModule[] = [
       "Op dit platform komen de aanvragen binnen die met de coaches en de specialisten verbonden moeten worden.",
     oneTime: 1975,
     monthly: 95,
-    defaultSelected: false,
+    defaultSelected: true,
     isOptional: true,
   },
 ]
@@ -104,6 +107,13 @@ export function OfferPageClient() {
     return initial
   })
 
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [website, setWebsite] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitSuccess, setSubmitSuccess] = useState<string | null>(null)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+
   const toggleModule = useCallback((id: string) => {
     setSelected((prev) => {
       const next = new Set(prev)
@@ -124,10 +134,94 @@ export function OfferPageClient() {
     window.print()
   }, [])
 
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setSubmitSuccess(null)
+    setSubmitError(null)
+
+    const trimmedName = name.trim()
+    const trimmedEmail = email.trim()
+    const honeypot = website.trim()
+
+    if (!trimmedName) {
+      setSubmitError("Vul je naam in.")
+      return
+    }
+    if (!trimmedEmail) {
+      setSubmitError("Vul je e-mailadres in.")
+      return
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(trimmedEmail)) {
+      setSubmitError("Vul een geldig e-mailadres in.")
+      return
+    }
+    if (selectedModules.length === 0) {
+      setSubmitError("Selecteer minimaal één onderdeel voor de offerte.")
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const response = await fetch("/api/offer/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customer: {
+            name: trimmedName,
+            email: trimmedEmail,
+          },
+          selectedModules: selectedModules.map((module) => ({
+            id: module.id,
+            title: module.title,
+            oneTime: module.oneTime,
+            monthly: module.monthly,
+          })),
+          totals: {
+            oneTimeTotal: totalOneTime,
+            monthlyTotal: totalMonthly,
+          },
+          additionalRates: {
+            adjustmentsHourly: 125,
+            travelTimeHourly: 65,
+            travelCostPerKm: 0.45,
+          },
+          proposal: {
+            title: "Time-out offerte van Salgai voor Vrieling VitalR",
+          },
+          meta: {
+            source: "vrieling.salgai.nl/aanbod",
+            createdAt: new Date().toISOString(),
+          },
+          website: honeypot,
+        }),
+      })
+
+      if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as { error?: string } | null
+        setSubmitError(
+          data?.error ??
+            "Er is iets misgegaan bij het versturen van de offerte. Probeer het later opnieuw."
+        )
+        return
+      }
+
+      setSubmitSuccess("De offerte is verzonden. Je ontvangt deze per e-mail.")
+    } catch {
+      setSubmitError(
+        "Er is een technische fout opgetreden bij het versturen van de offerte. Probeer het later opnieuw."
+      )
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <main className="mx-auto min-w-0 max-w-6xl px-4 py-6 sm:py-8 print:py-4">
       <div className="grid gap-6 lg:grid-cols-[1fr_340px] lg:gap-8">
-        {/* Left: Modules */}
+        {/* Left: toelichting + doelstelling + modules */}
         <div className="min-w-0 space-y-6">
           <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:p-6">
             <h1 className="mb-3 text-xl font-semibold text-primary sm:text-2xl print:text-foreground">
@@ -135,11 +229,26 @@ export function OfferPageClient() {
             </h1>
             <p className="text-sm leading-relaxed text-foreground">
               Met deze offerte investeert u in het <strong>voorkómen van verzuim</strong>. Door
-              werknemers en leidinggevenden vroegtijdig te ondersteunen met gerichte interventies
-              – nog vóór er sprake is van verzuim – lost u knelpunten op waar ze ontstaan. Het
+              werknemers en leidinggevenden vroegtijdig te ondersteunen met gerichte interventies –
+              nog vóór er sprake is van verzuim – lost u knelpunten op waar ze ontstaan. Het
               resultaat: minder verzuim, gezondere medewerkers en lagere kosten voor uw organisatie.
             </p>
           </div>
+
+          {/* Doelstelling */}
+          <Card className="rounded-2xl shadow-sm print:shadow-none">
+            <CardHeader>
+              <CardTitle className="text-lg">Doelstelling</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Werknemers ondersteunen door met behulp van Time-out en eigen casemanagers en
+                specialisten gerichte interventies in te zetten nog voordat er sprake is van
+                verzuim. Voordeel voor de werkgever is het voorkomen van toekomstig verzuim door
+                knelpunten vroegtijdig op te lossen.
+              </p>
+            </CardContent>
+          </Card>
 
           <Card className="rounded-2xl shadow-sm print:shadow-none">
             <CardHeader>
@@ -180,8 +289,61 @@ export function OfferPageClient() {
                       </p>
                       <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm font-medium text-muted-foreground">
                         <span>Eenmalig: {formatCurrency(module.oneTime)} ex.</span>
-                        <span>Maandelijks: {formatCurrency(module.monthly)} ex.</span>
+                        <span className="flex items-center gap-1">
+                          Maandelijks: {formatCurrency(module.monthly)} ex.
+                          {module.monthly === 95 && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  className="inline-flex h-4 w-4 items-center justify-center text-muted-foreground hover:text-foreground"
+                                  aria-label="Toelichting maandbedrag"
+                                >
+                                  <Info className="h-3 w-3" />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Maandbedrag per aangesloten klant.</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </span>
                       </div>
+                      {module.id === "vitalr-nexus" && (
+                        <div className="mt-3 space-y-2 text-sm">
+                          <p className="font-medium text-foreground">
+                            Registratie- en gebruikstarieven VitalR Nexus
+                          </p>
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Omschrijving</TableHead>
+                                <TableHead className="text-right">Tarief</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              <TableRow>
+                                <TableCell>Eigen coach (bij inschrijving 2 credits)</TableCell>
+                                <TableCell className="text-right">
+                                  {formatCurrencyDecimal(4.95)} per maand ex.
+                                </TableCell>
+                              </TableRow>
+                              <TableRow>
+                                <TableCell>Eigen specialist (bij inschrijving 2 credits)</TableCell>
+                                <TableCell className="text-right">
+                                  {formatCurrencyDecimal(4.95)} per maand ex.
+                                </TableCell>
+                              </TableRow>
+                              <TableRow>
+                                <TableCell>Credits (min. 10 per keer)</TableCell>
+                                <TableCell className="text-right">
+                                  {formatCurrencyDecimal(4.95)} ex. per opdracht
+                                </TableCell>
+                              </TableRow>
+                            </TableBody>
+                          </Table>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -191,28 +353,12 @@ export function OfferPageClient() {
 
           <Separator className="print:hidden" />
 
-          {/* VitalR Nexus – uitgebreide uitleg */}
+          {/* Aanvullende tarieven (los van VitalR Nexus) */}
           <Card className="rounded-2xl shadow-sm print:shadow-none">
             <CardHeader>
-              <CardTitle className="text-lg">
-                VitalR Nexus – het verbindend platform
-              </CardTitle>
-              <p className="text-sm font-normal text-muted-foreground mt-1">
-                Registratie- en gebruikstarieven
-              </p>
+              <CardTitle className="text-lg">Aanvullende tarieven</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-xl border border-border bg-secondary/30 p-4">
-                <p className="text-sm leading-relaxed text-foreground">
-                  <strong>VitalR Nexus</strong> is het centrale platform waar vraag en aanbod
-                  samenkomen. Alle aanvragen van werknemers en leidinggevenden – via de Time-out
-                  knop, Verzuimreflectie of Navigatie – komen hier binnen. Het platform koppelt
-                  deze aanvragen automatisch aan de juiste coaches en specialisten binnen uw
-                  netwerk. Zo blijft de regie bij u, terwijl uw medewerkers snel en gericht worden
-                  geholpen. U bepaalt zelf welke coaches en specialisten zijn aangesloten, en
-                  houdt zicht op het gebruik en de voortgang.
-                </p>
-              </div>
+            <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -221,18 +367,6 @@ export function OfferPageClient() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <TableRow>
-                    <TableCell>Eigen coach (bij inschrijving 2 credits)</TableCell>
-                    <TableCell className="text-right">{formatCurrencyDecimal(4.95)} per maand ex.</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Eigen specialist (bij inschrijving 2 credits)</TableCell>
-                    <TableCell className="text-right">{formatCurrencyDecimal(4.95)} per maand ex.</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Credits (min. 10 per keer)</TableCell>
-                    <TableCell className="text-right">{formatCurrencyDecimal(4.95)} ex. per opdracht</TableCell>
-                  </TableRow>
                   <TableRow>
                     <TableCell>Aanpassingen / implementatie / overleg</TableCell>
                     <TableCell className="text-right">{formatCurrency(125)} ex. per uur</TableCell>
@@ -243,21 +377,24 @@ export function OfferPageClient() {
                   </TableRow>
                   <TableRow>
                     <TableCell>Reiskosten</TableCell>
-                    <TableCell className="text-right">{formatCurrencyDecimal(0.45)} per kilometer</TableCell>
+                    <TableCell className="text-right">
+                      {formatCurrencyDecimal(0.45)} per kilometer
+                    </TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
             </CardContent>
           </Card>
+
         </div>
 
-        {/* Right: Summary panel */}
+        {/* Rechts: samenvatting + offerte per e-mail */}
         <div className="min-w-0 lg:sticky lg:top-8 lg:self-start">
           <Card className="rounded-2xl shadow-sm print:shadow-none print:static">
             <CardHeader>
-              <CardTitle className="text-lg">Samenvatting</CardTitle>
+              <CardTitle className="text-lg">Samenvatting en offerte per e-mail</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div>
                 <p className="mb-2 text-sm font-medium text-muted-foreground">
                   Geselecteerde onderdelen
@@ -268,12 +405,33 @@ export function OfferPageClient() {
                   </p>
                 ) : (
                   <ul className="space-y-3 text-sm">
-                    {selectedModules.map((m) => (
-                      <li key={m.id} className="border-b border-border pb-3 last:border-0 last:pb-0">
-                        <span className="font-medium text-foreground">{m.title}</span>
+                    {selectedModules.map((module) => (
+                      <li
+                        key={module.id}
+                        className="border-b border-border pb-3 last:border-0 last:pb-0"
+                      >
+                        <span className="font-medium text-foreground">{module.title}</span>
                         <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-                          <span>Eenmalig: {formatCurrency(m.oneTime)}</span>
-                          <span>Maandelijks: {formatCurrency(m.monthly)}</span>
+                          <span>Eenmalig: {formatCurrency(module.oneTime)}</span>
+                          <span className="flex items-center gap-1">
+                            Maandelijks: {formatCurrency(module.monthly)}
+                            {module.monthly === 95 && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    type="button"
+                                    className="inline-flex h-3.5 w-3.5 items-center justify-center text-muted-foreground hover:text-foreground"
+                                    aria-label="Toelichting maandbedrag"
+                                  >
+                                    <Info className="h-3 w-3" />
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Maandbedrag per aangesloten klant.</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                          </span>
                         </div>
                       </li>
                     ))}
@@ -296,19 +454,65 @@ export function OfferPageClient() {
 
               <p className="text-xs text-muted-foreground">Alle bedragen excl. btw</p>
 
-              <Button
-                onClick={handlePrint}
-                className="w-full rounded-xl print:hidden"
-                size="lg"
-              >
-                <Printer className="mr-2 h-4 w-4" />
-                Offerte printen
-              </Button>
+              <Separator className="print:hidden" />
+
+              {/* Offerte per e-mail ontvangen (samengevoegd) */}
+              <form className="space-y-4 print:hidden" onSubmit={handleSubmit} noValidate>
+                <div className="space-y-1.5">
+                  <Label htmlFor="offer-name">Naam*</Label>
+                  <Input
+                    id="offer-name"
+                    name="name"
+                    type="text"
+                    autoComplete="name"
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="offer-email">E-mail*</Label>
+                  <Input
+                    id="offer-email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                  />
+                </div>
+                {/* Honeypot */}
+                <div className="hidden">
+                  <Label htmlFor="offer-website">Website</Label>
+                  <Input
+                    id="offer-website"
+                    name="website"
+                    type="text"
+                    autoComplete="off"
+                    value={website}
+                    onChange={(event) => setWebsite(event.target.value)}
+                  />
+                </div>
+
+                {submitError && (
+                  <p className="text-sm text-destructive">{submitError}</p>
+                )}
+                {submitSuccess && !submitError && (
+                  <p className="text-sm text-emerald-700">{submitSuccess}</p>
+                )}
+
+                <Button
+                  type="submit"
+                  className="w-full rounded-xl"
+                  size="lg"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Bezig met versturen..." : "Verstuur offerte per e-mail"}
+                </Button>
+              </form>
             </CardContent>
           </Card>
         </div>
       </div>
-
     </main>
   )
 }
