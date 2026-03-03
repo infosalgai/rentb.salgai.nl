@@ -56,7 +56,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="nl" className={nunitoSans.className}>
-      <body className="antialiased">
+      <body className="antialiased min-w-0 overflow-x-hidden">
         {children}
         <Toaster />
         <PwaInstallPrompt />
