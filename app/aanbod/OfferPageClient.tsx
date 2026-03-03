@@ -113,6 +113,10 @@ export function OfferPageClient() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [openTooltipId, setOpenTooltipId] = useState<string | null>(null)
+
+  const tooltipTriggerClass =
+    "inline-flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-md p-2 text-muted-foreground hover:text-foreground touch-manipulation"
 
   const toggleModule = useCallback((id: string) => {
     setSelected((prev) => {
@@ -219,10 +223,10 @@ export function OfferPageClient() {
   }
 
   return (
-    <main className="mx-auto w-full min-w-0 max-w-6xl px-4 py-6 sm:py-8 print:py-4">
-      <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-[1fr_340px] lg:gap-8">
+    <main className="mx-auto w-full min-w-0 max-w-6xl px-4 py-6 sm:px-6 sm:py-8 print:py-4">
+      <div className="grid min-w-0 grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-[1fr_340px] lg:gap-8">
         {/* Left: toelichting + doelstelling + modules */}
-        <div className="min-w-0 space-y-6">
+        <div className="min-w-0 space-y-6 sm:space-y-8">
           <div className="min-w-0 rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:p-6">
             <h1 className="mb-3 break-words text-xl font-semibold text-primary sm:text-2xl print:text-foreground">
               Time-out offerte van Salgai voor Vrieling VitalR
@@ -292,14 +296,24 @@ export function OfferPageClient() {
                         <span>Eenmalig: {formatCurrency(module.oneTime)}</span>
                         <span className="flex items-center gap-1">
                           Maandelijks: {formatCurrency(module.monthly)}
-                          <Tooltip>
+                          <Tooltip
+                            open={openTooltipId === `monthly-${module.id}`}
+                            onOpenChange={(open) =>
+                              setOpenTooltipId(open ? `monthly-${module.id}` : null)
+                            }
+                          >
                             <TooltipTrigger asChild>
                               <button
                                 type="button"
-                                className="inline-flex h-4 w-4 items-center justify-center text-muted-foreground hover:text-foreground"
+                                className={tooltipTriggerClass}
                                 aria-label="Toelichting maandbedrag"
+                                onClick={() =>
+                                  setOpenTooltipId((prev) =>
+                                    prev === `monthly-${module.id}` ? null : `monthly-${module.id}`,
+                                  )
+                                }
                               >
-                                <Info className="h-3 w-3" />
+                                <Info className="h-4 w-4 sm:h-3 sm:w-3" />
                               </button>
                             </TooltipTrigger>
                             <TooltipContent>
@@ -330,14 +344,24 @@ export function OfferPageClient() {
                                   <TableCell className="min-w-0 whitespace-normal py-2 pr-2 sm:pr-3">
                                     <span className="inline-flex items-center gap-1">
                                       Eigen coach
-                                      <Tooltip>
+                                      <Tooltip
+                                        open={openTooltipId === "vitalr-coach"}
+                                        onOpenChange={(open) =>
+                                          setOpenTooltipId(open ? "vitalr-coach" : null)
+                                        }
+                                      >
                                         <TooltipTrigger asChild>
                                           <button
                                             type="button"
-                                            className="inline-flex h-4 w-4 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground"
+                                            className={tooltipTriggerClass}
                                             aria-label="Toelichting"
+                                            onClick={() =>
+                                              setOpenTooltipId((prev) =>
+                                                prev === "vitalr-coach" ? null : "vitalr-coach",
+                                              )
+                                            }
                                           >
-                                            <Info className="h-3 w-3" />
+                                            <Info className="h-4 w-4 sm:h-3 sm:w-3" />
                                           </button>
                                         </TooltipTrigger>
                                         <TooltipContent>
@@ -354,14 +378,26 @@ export function OfferPageClient() {
                                   <TableCell className="min-w-0 whitespace-normal py-2 pr-2 sm:pr-3">
                                     <span className="inline-flex items-center gap-1">
                                       Eigen specialist
-                                      <Tooltip>
+                                      <Tooltip
+                                        open={openTooltipId === "vitalr-specialist"}
+                                        onOpenChange={(open) =>
+                                          setOpenTooltipId(open ? "vitalr-specialist" : null)
+                                        }
+                                      >
                                         <TooltipTrigger asChild>
                                           <button
                                             type="button"
-                                            className="inline-flex h-4 w-4 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground"
+                                            className={tooltipTriggerClass}
                                             aria-label="Toelichting"
+                                            onClick={() =>
+                                              setOpenTooltipId((prev) =>
+                                                prev === "vitalr-specialist"
+                                                  ? null
+                                                  : "vitalr-specialist",
+                                              )
+                                            }
                                           >
-                                            <Info className="h-3 w-3" />
+                                            <Info className="h-4 w-4 sm:h-3 sm:w-3" />
                                           </button>
                                         </TooltipTrigger>
                                         <TooltipContent>
@@ -378,14 +414,26 @@ export function OfferPageClient() {
                                   <TableCell className="min-w-0 whitespace-normal py-2 pr-2 sm:pr-3">
                                     <span className="inline-flex items-center gap-1">
                                       Credits
-                                      <Tooltip>
+                                      <Tooltip
+                                        open={openTooltipId === "vitalr-credits-min"}
+                                        onOpenChange={(open) =>
+                                          setOpenTooltipId(open ? "vitalr-credits-min" : null)
+                                        }
+                                      >
                                         <TooltipTrigger asChild>
                                           <button
                                             type="button"
-                                            className="inline-flex h-4 w-4 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground"
+                                            className={tooltipTriggerClass}
                                             aria-label="Toelichting"
+                                            onClick={() =>
+                                              setOpenTooltipId((prev) =>
+                                                prev === "vitalr-credits-min"
+                                                  ? null
+                                                  : "vitalr-credits-min",
+                                              )
+                                            }
                                           >
-                                            <Info className="h-3 w-3" />
+                                            <Info className="h-4 w-4 sm:h-3 sm:w-3" />
                                           </button>
                                         </TooltipTrigger>
                                         <TooltipContent>
@@ -397,14 +445,26 @@ export function OfferPageClient() {
                                   <TableCell className="shrink-0 py-2 pl-2 text-right sm:pl-3">
                                     <span className="inline-flex items-center gap-1 justify-end">
                                       {formatCurrencyDecimal(4.95)} per credit
-                                      <Tooltip>
+                                      <Tooltip
+                                        open={openTooltipId === "vitalr-credit-unit"}
+                                        onOpenChange={(open) =>
+                                          setOpenTooltipId(open ? "vitalr-credit-unit" : null)
+                                        }
+                                      >
                                         <TooltipTrigger asChild>
                                           <button
                                             type="button"
-                                            className="inline-flex h-4 w-4 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground"
+                                            className={tooltipTriggerClass}
                                             aria-label="Toelichting credit"
+                                            onClick={() =>
+                                              setOpenTooltipId((prev) =>
+                                                prev === "vitalr-credit-unit"
+                                                  ? null
+                                                  : "vitalr-credit-unit",
+                                              )
+                                            }
                                           >
-                                            <Info className="h-3 w-3" />
+                                            <Info className="h-4 w-4 sm:h-3 sm:w-3" />
                                           </button>
                                         </TooltipTrigger>
                                         <TooltipContent>
@@ -452,14 +512,24 @@ export function OfferPageClient() {
                       <TableCell className="min-w-0 whitespace-normal py-2 pr-2 sm:pr-3">
                         <span className="inline-flex items-center gap-1">
                           Nacalculatie
-                          <Tooltip>
+                          <Tooltip
+                            open={openTooltipId === "nacalculatie"}
+                            onOpenChange={(open) =>
+                              setOpenTooltipId(open ? "nacalculatie" : null)
+                            }
+                          >
                             <TooltipTrigger asChild>
                               <button
                                 type="button"
-                                className="inline-flex h-4 w-4 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground"
+                                className={tooltipTriggerClass}
                                 aria-label="Toelichting"
+                                onClick={() =>
+                                  setOpenTooltipId((prev) =>
+                                    prev === "nacalculatie" ? null : "nacalculatie",
+                                  )
+                                }
                               >
-                                <Info className="h-3 w-3" />
+                                <Info className="h-4 w-4 sm:h-3 sm:w-3" />
                               </button>
                             </TooltipTrigger>
                             <TooltipContent>
@@ -519,18 +589,30 @@ export function OfferPageClient() {
                         className="border-b border-border pb-3 last:border-0 last:pb-0"
                       >
                         <span className="break-words font-medium text-foreground">{module.title}</span>
-                        <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 break-words text-xs text-muted-foreground">
-                          <span>Eenmalig: {formatCurrency(module.oneTime)}</span>
-                          <span className="flex items-center gap-1">
-                            Maandelijks: {formatCurrency(module.monthly)}
-                            <Tooltip>
+                        <div className="mt-1 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 break-words text-xs text-muted-foreground sm:flex sm:flex-wrap sm:gap-x-3">
+                          <span className="tabular-nums">Eenmalig: {formatCurrency(module.oneTime)}</span>
+                          <span className="flex min-w-0 items-center gap-1 tabular-nums">
+                            <span>Maandelijks: {formatCurrency(module.monthly)}</span>
+                            <Tooltip
+                              open={openTooltipId === `summary-monthly-${module.id}`}
+                              onOpenChange={(open) =>
+                                setOpenTooltipId(open ? `summary-monthly-${module.id}` : null)
+                              }
+                            >
                               <TooltipTrigger asChild>
                                 <button
                                   type="button"
-                                  className="inline-flex h-3.5 w-3.5 items-center justify-center text-muted-foreground hover:text-foreground"
+                                  className={tooltipTriggerClass}
                                   aria-label="Toelichting maandbedrag"
+                                  onClick={() =>
+                                    setOpenTooltipId((prev) =>
+                                      prev === `summary-monthly-${module.id}`
+                                        ? null
+                                        : `summary-monthly-${module.id}`,
+                                    )
+                                  }
                                 >
-                                  <Info className="h-3 w-3" />
+                                  <Info className="h-4 w-4 sm:h-3 sm:w-3" />
                                 </button>
                               </TooltipTrigger>
                               <TooltipContent>
@@ -547,24 +629,22 @@ export function OfferPageClient() {
 
               <Separator />
 
-              <div className="space-y-2">
-                <div className="flex flex-col gap-0.5">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Totaal eenmalig</span>
-                    <span className="font-medium">{formatCurrency(totalOneTime)}</span>
-                  </div>
-                  <div className="flex justify-end text-xs text-muted-foreground">
-                    {formatCurrencyDecimal(totalOneTime * 1.21)} incl. btw (21%)
-                  </div>
+              <div className="space-y-3">
+                <div className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-0.5 text-sm">
+                  <span className="text-muted-foreground">Totaal eenmalig</span>
+                  <span className="text-right font-medium tabular-nums">{formatCurrency(totalOneTime)}</span>
+                  <span className="text-xs text-muted-foreground">incl. btw (21%)</span>
+                  <span className="text-right text-xs tabular-nums text-muted-foreground">
+                    {formatCurrencyDecimal(totalOneTime * 1.21)}
+                  </span>
                 </div>
-                <div className="flex flex-col gap-0.5">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Totaal per maand</span>
-                    <span className="font-medium">{formatCurrency(totalMonthly)}</span>
-                  </div>
-                  <div className="flex justify-end text-xs text-muted-foreground">
-                    {formatCurrencyDecimal(totalMonthly * 1.21)} incl. btw (21%)
-                  </div>
+                <div className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-0.5 text-sm">
+                  <span className="text-muted-foreground">Totaal per maand</span>
+                  <span className="text-right font-medium tabular-nums">{formatCurrency(totalMonthly)}</span>
+                  <span className="text-xs text-muted-foreground">incl. btw (21%)</span>
+                  <span className="text-right text-xs tabular-nums text-muted-foreground">
+                    {formatCurrencyDecimal(totalMonthly * 1.21)}
+                  </span>
                 </div>
               </div>
 

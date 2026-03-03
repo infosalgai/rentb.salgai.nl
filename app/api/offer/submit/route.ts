@@ -125,6 +125,8 @@ export async function POST(request: Request) {
         totals: {
           oneTimeTotal,
           monthlyTotal,
+          oneTimeTotalInclBtw: Math.round(oneTimeTotal * 1.21 * 100) / 100,
+          monthlyTotalInclBtw: Math.round(monthlyTotal * 1.21 * 100) / 100,
         },
         additionalRates: body.additionalRates,
         proposal: body.proposal ?? {
