@@ -219,7 +219,7 @@ export function OfferPageClient() {
   }
 
   return (
-    <main className="mx-auto w-full min-w-0 max-w-6xl overflow-x-hidden px-4 py-6 sm:py-8 print:py-4">
+    <main className="mx-auto w-full min-w-0 max-w-6xl px-4 py-6 sm:py-8 print:py-4">
       <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-[1fr_340px] lg:gap-8">
         {/* Left: toelichting + doelstelling + modules */}
         <div className="min-w-0 space-y-6">
