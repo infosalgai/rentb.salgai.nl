@@ -228,7 +228,7 @@ export function OfferPageClient() {
               Time-out offerte van Salgai voor Vrieling VitalR
             </h1>
             <p className="break-words text-sm leading-relaxed text-foreground">
-              Met deze offerte investeert u in het <strong>voorkómen van verzuim</strong>. Door
+              Met deze offerte investeert u primair in het <strong>voorkómen van verzuim</strong>. Door
               werknemers en leidinggevenden vroegtijdig te ondersteunen met gerichte interventies –
               nog vóór er sprake is van verzuim – lost u knelpunten op waar ze ontstaan. Het
               resultaat: minder verzuim, gezondere medewerkers en lagere kosten voor uw organisatie.
@@ -238,7 +238,7 @@ export function OfferPageClient() {
           {/* Doelstelling */}
           <Card className="min-w-0 rounded-2xl shadow-sm print:shadow-none">
             <CardHeader className="px-4 sm:px-6">
-              <CardTitle className="text-lg">Doelstelling</CardTitle>
+              <CardTitle className="text-lg">Primaire doelstelling</CardTitle>
             </CardHeader>
             <CardContent className="min-w-0 px-4 sm:px-6">
               <p className="break-words text-sm leading-relaxed text-muted-foreground">
@@ -253,6 +253,7 @@ export function OfferPageClient() {
           <Card className="min-w-0 rounded-2xl shadow-sm print:shadow-none">
             <CardHeader className="px-4 sm:px-6">
               <CardTitle className="text-lg">Modules</CardTitle>
+              <p className="text-xs text-muted-foreground">Alle bedragen excl. btw, tenzij vermeld</p>
             </CardHeader>
             <CardContent className="min-w-0 space-y-4 px-4 sm:px-6">
               {MODULES.map((module) => (
@@ -288,9 +289,9 @@ export function OfferPageClient() {
                         {module.description}
                       </p>
                       <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 break-words text-sm font-medium text-muted-foreground">
-                        <span>Eenmalig: {formatCurrency(module.oneTime)} ex.</span>
+                        <span>Eenmalig: {formatCurrency(module.oneTime)}</span>
                         <span className="flex items-center gap-1">
-                          Maandelijks: {formatCurrency(module.monthly)} ex.
+                          Maandelijks: {formatCurrency(module.monthly)}
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <button
@@ -431,6 +432,7 @@ export function OfferPageClient() {
           <Card className="min-w-0 rounded-2xl shadow-sm print:shadow-none">
             <CardHeader className="px-4 sm:px-6">
               <CardTitle className="text-lg">Aanvullende tarieven</CardTitle>
+              <p className="text-xs text-muted-foreground">Alle bedragen excl. btw, tenzij vermeld</p>
             </CardHeader>
             <CardContent className="min-w-0 px-4 sm:px-6">
               <div className="min-w-0 overflow-x-auto">
@@ -448,7 +450,23 @@ export function OfferPageClient() {
                   <TableBody>
                     <TableRow>
                       <TableCell className="min-w-0 whitespace-normal py-2 pr-2 sm:pr-3">
-                        Nacalculatie (voor maatwerk, implementatie of overlegmomenten)
+                        <span className="inline-flex items-center gap-1">
+                          Nacalculatie
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                className="inline-flex h-4 w-4 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground"
+                                aria-label="Toelichting"
+                              >
+                                <Info className="h-3 w-3" />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Voor maatwerk, implementatie of overlegmomenten.</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </span>
                       </TableCell>
                       <TableCell className="shrink-0 py-2 pl-2 text-right sm:pl-3">
                         {formatCurrency(125)} per uur
@@ -530,17 +548,25 @@ export function OfferPageClient() {
               <Separator />
 
               <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Totaal eenmalig</span>
-                  <span className="font-medium">{formatCurrency(totalOneTime)}</span>
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Totaal eenmalig</span>
+                    <span className="font-medium">{formatCurrency(totalOneTime)}</span>
+                  </div>
+                  <div className="flex justify-end text-xs text-muted-foreground">
+                    {formatCurrencyDecimal(totalOneTime * 1.21)} incl. btw (21%)
+                  </div>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Totaal per maand</span>
-                  <span className="font-medium">{formatCurrency(totalMonthly)}</span>
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Totaal per maand</span>
+                    <span className="font-medium">{formatCurrency(totalMonthly)}</span>
+                  </div>
+                  <div className="flex justify-end text-xs text-muted-foreground">
+                    {formatCurrencyDecimal(totalMonthly * 1.21)} incl. btw (21%)
+                  </div>
                 </div>
               </div>
-
-              <p className="text-xs text-muted-foreground">Alle bedragen excl. btw</p>
 
               <Separator className="print:hidden" />
 
