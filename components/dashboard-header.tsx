@@ -29,11 +29,11 @@ export function DashboardHeader({ role, route, showBack = false, backHref = "/" 
         {/* Left: Logo */}
         <Link href="/demo" className="flex shrink-0 items-center min-h-[44px] min-w-[44px]">
           <Image
-            src="/images/vitalr-logo.png"
-            alt="Vitalr"
-            width={167}
-            height={40}
-            className="h-7 w-auto sm:h-8"
+            src="/images/rentb-logo.png"
+            alt="Reith & Ten Böhmer Accountants en Belastingadviseurs"
+            width={420}
+            height={103}
+            className="h-8 w-auto sm:h-9"
             priority
           />
         </Link>

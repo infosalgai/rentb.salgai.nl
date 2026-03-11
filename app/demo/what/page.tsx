@@ -71,10 +71,10 @@ export default function DemoRouteSelectionPage() {
             <div className="mb-6 text-center">
               <div className="mx-auto mb-4">
                 <Image
-                  src="/images/vitalr-logo.png"
-                  alt="Vitalr"
-                  width={188}
-                  height={45}
+                  src="/images/rentb-logo.png"
+                  alt="Reith & Ten Böhmer Accountants en Belastingadviseurs"
+                  width={420}
+                  height={103}
                   className="mx-auto h-10 w-auto"
                   priority
                 />

@@ -15,11 +15,11 @@ export function NavHeader({ showBack = true, backHref = "/" }: NavHeaderProps) {
       <div className="mx-auto flex h-14 min-h-[3.5rem] max-w-[900px] items-center justify-between gap-2 px-4">
         <Link href="/demo" className="flex min-h-[44px] min-w-[44px] shrink-0 items-center">
           <Image
-            src="/images/vitalr-logo.png"
-            alt="Vitalr"
-            width={167}
-            height={40}
-            className="h-7 w-auto sm:h-8"
+            src="/images/rentb-logo.png"
+            alt="Reith & Ten Böhmer Accountants en Belastingadviseurs"
+            width={420}
+            height={103}
+            className="h-8 w-auto sm:h-9"
             priority
           />
         </Link>

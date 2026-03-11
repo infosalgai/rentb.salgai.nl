@@ -4,29 +4,29 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* verzuimdynamiek.nl aligned colors */
-  --background: #F4F5F0;
-  --foreground: #1F2937;
+  /* rentb.nl aligned colors */
+  --background: #FFFFFF;
+  --foreground: #2C3E50;
   --card: #FFFFFF;
-  --card-foreground: #1F2937;
+  --card-foreground: #2C3E50;
   --popover: #FFFFFF;
-  --popover-foreground: #1F2937;
-  --primary: #2D3182;
+  --popover-foreground: #2C3E50;
+  --primary: #0B4A7B; /* donkerblauw zoals rentb */
   --primary-foreground: #FFFFFF;
-  --secondary: #F1F5F9;
-  --secondary-foreground: #1F2937;
-  --muted: #F1F5F9;
-  --muted-foreground: #64748B;
-  --accent: #F7A521;
+  --secondary: #F5F7FA;
+  --secondary-foreground: #2C3E50;
+  --muted: #F5F7FA;
+  --muted-foreground: #7B8A9A;
+  --accent: #F7941D; /* oranje accent */
   --accent-foreground: #FFFFFF;
   --destructive: #DC2626;
   --destructive-foreground: #FFFFFF;
-  --border: #E5E7EB;
-  --input: #E5E7EB;
-  --ring: #2D3182;
-  --chart-1: #2D3182;
-  --chart-2: #F7A521;
-  --chart-3: #64748B;
+  --border: #E0E4EC;
+  --input: #E0E4EC;
+  --ring: #0B4A7B;
+  --chart-1: #0B4A7B;
+  --chart-2: #F7941D;
+  --chart-3: #7B8A9A;
   --chart-4: #10B981;
   --chart-5: #8B5CF6;
   --radius: 1rem;
@@ -39,10 +39,10 @@
   --sidebar-border: #E5E7EB;
   --sidebar-ring: #2D3182;
   
-  /* Vitalr additional colors */
-  --primary-dark: #222870;
-  --accent-dark: #E09518;
-  --heading: #2D3182;
+  /* Rentb additional colors */
+  --primary-dark: #08385F;
+  --accent-dark: #E57F12;
+  --heading: #0B4A7B;
   --body: #555555;
   --subtle: #888888;
 }
